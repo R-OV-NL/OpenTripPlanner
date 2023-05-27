@@ -668,6 +668,8 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         } else {
           debug(tripId, "Trip update misses departure time, skipping.");
           return null;
+
+          //Add arrival time as departure time?
         }
       }
     }
