@@ -890,6 +890,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         stopIndex,
         newTripTimes.getScheduledDepartureTime(stopIndex)
       );
+
+      newTripTimes.updateArrivalDelay(stopIndex, newTripTimes.getArrivalDelay(stopIndex));
+      newTripTimes.updateDepartureDelay(stopIndex, newTripTimes.getDepartureDelay(stopIndex));
     }
 
     // Set service code of new trip times
