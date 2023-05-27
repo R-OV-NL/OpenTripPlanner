@@ -632,34 +632,37 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         return null;
       }
 
-      // Check arrival time
-      if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
-        // Check for increasing time
-        final Long time = stopTimeUpdate.getArrival().getTime();
-        if (previousTime != null && previousTime > time) {
-          debug(tripId, "Trip update contains decreasing times, skipping.");
+      if(stopTimeUpdate.getScheduleRelationship() != StopTimeUpdate.ScheduleRelationship.SKIPPED) {
+        // Check arrival time
+        if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
+          // Check for increasing time
+          final Long time = stopTimeUpdate.getArrival().getTime();
+          if (previousTime != null && previousTime > time) {
+            debug(tripId, "Trip update contains decreasing times, skipping.");
+            return null;
+          }
+          previousTime = time;
+        } else {
+          debug(tripId, "Trip update misses arrival time, skipping.");
           return null;
         }
-        previousTime = time;
-      } else {
-        debug(tripId, "Trip update misses arrival time, skipping.");
-        return null;
-      }
 
-      // Check departure time
-      if (stopTimeUpdate.hasDeparture() && stopTimeUpdate.getDeparture().hasTime()) {
-        // Check for increasing time
-        final Long time = stopTimeUpdate.getDeparture().getTime();
-        if (previousTime != null && previousTime > time) {
-          debug(tripId, "Trip update contains decreasing times, skipping.");
+        // Check departure time
+        if (stopTimeUpdate.hasDeparture() && stopTimeUpdate.getDeparture().hasTime()) {
+          // Check for increasing time
+          final Long time = stopTimeUpdate.getDeparture().getTime();
+          if (previousTime != null && previousTime > time) {
+            debug(tripId, "Trip update contains decreasing times, skipping.");
+            return null;
+          }
+          previousTime = time;
+        } else {
+          debug(tripId, "Trip update misses departure time, skipping.");
           return null;
         }
-        previousTime = time;
-      } else {
-        debug(tripId, "Trip update misses departure time, skipping.");
-        return null;
       }
     }
+
     return stops;
   }
 
