@@ -276,6 +276,20 @@ public class StreetEdge
     };
   }
 
+  public void setNoThruTraffic(TraverseMode traverseMode) {
+    switch (traverseMode) {
+      case WALK:
+        setWalkNoThruTraffic(true);
+        break;
+      case BICYCLE, SCOOTER:
+        setBicycleNoThruTraffic(true);
+        break;
+      case CAR, FLEX:
+        setMotorVehicleNoThruTraffic(true);
+        break;
+    }
+  }
+
   /**
    * Calculate the speed appropriately given the RouteRequest and traverseMode.
    */
@@ -386,6 +400,7 @@ public class StreetEdge
   }
 
   @Override
+  @Nonnull
   public State[] traverse(State s0) {
     final StateEditor editor;
 
@@ -396,7 +411,7 @@ public class StreetEdge
       arriveByRental &&
       (tov.rentalTraversalBanned(s0) || hasStartedSearchInNoDropOffZoneAndIsExitingIt(s0))
     ) {
-      return null;
+      return State.empty();
     }
     // if the traversal is banned for the current state because of a GBFS geofencing zone
     // we drop the vehicle and continue walking
