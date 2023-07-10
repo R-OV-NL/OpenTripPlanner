@@ -432,6 +432,18 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     // mark that previously created trip as DELETED.
     cancelPreviouslyAddedTrip(tripId, serviceDate, CancelationType.DELETE);
 
+    // Remove unknown assigned stops from the trip update
+    final List<StopTimeUpdate> stopTimeUpdates = removeUnknownAssignedStops(tripUpdate, tripId);
+
+    var warnings = new ArrayList<UpdateSuccess.WarningType>(0);
+
+    if(stopTimeUpdates.size() < tripUpdate.getStopTimeUpdateCount()) {
+      warnings.add(UpdateSuccess.WarningType.UNKNOWN_ASSIGNED_STOPS_REMOVED_FROM_SCHEDULED_TRIP);
+    }
+
+    //Set the trip update's stop time updates to the filtered list
+    tripUpdate = tripUpdate.toBuilder().clearStopTimeUpdate().addAllStopTimeUpdate(stopTimeUpdates).build();
+
     // Get new TripTimes based on scheduled timetable
     var result = pattern
       .getScheduledTimetable()
@@ -471,7 +483,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       return buffer.update(newPattern, updatedTripTimes, serviceDate);
     } else {
       // Set the updated trip times in the buffer
-      return buffer.update(pattern, updatedTripTimes, serviceDate);
+      return buffer.update(pattern, updatedTripTimes, serviceDate).mapSuccess(
+        success -> success.addWarnings(warnings)
+      );
     }
   }
 
@@ -502,6 +516,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     if (trip != null) {
       // TODO: should we support this and add a new instantiation of this trip (making it
       // frequency based)?
+
       debug(tripId, "Graph already contains trip id of ADDED trip, skipping.");
       return UpdateError.result(tripId, TRIP_ALREADY_EXISTS);
     }
@@ -554,6 +569,41 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         var stopFound = transitService.getRegularStop(stopId) != null;
         if (!stopFound) {
           debug(tripId, "Stop '{}' not found in graph. Removing from ADDED trip.", st.getStopId());
+        }
+        return stopFound;
+      })
+      .toList();
+  }
+
+  /**
+   * Remove any assigned stop that is not known in the static transit data.
+   * @param tripUpdate GTFS-RT TripUpdate message
+   * @param tripId FeedScoped ID of the trip
+   * @return list of stop time updates with unknown stops removed
+   */
+  @Nonnull
+  private List<StopTimeUpdate> removeUnknownAssignedStops(TripUpdate tripUpdate, FeedScopedId tripId) {
+    return tripUpdate
+      .getStopTimeUpdateList()
+      .stream()
+      .filter(StopTimeUpdate::hasStopId)
+      .filter(st -> {
+
+        // Check if stop time properties exists, and an assigned stop is set
+        if (!st.hasStopTimeProperties() || !st.getStopTimeProperties().hasAssignedStopId())
+          return true;
+
+        String assignedStopId = st.getStopTimeProperties().getAssignedStopId();
+
+        FeedScopedId feedScopedAssignedStopId = new FeedScopedId(
+          tripId.getFeedId(),
+          assignedStopId
+        );
+
+
+        var stopFound = transitService.getRegularStop(feedScopedAssignedStopId) != null;
+        if (!stopFound) {
+          debug(tripId, "Assigned Stop '{}' not found in graph. Removing from SCHEDULED trip.", assignedStopId);
         }
         return stopFound;
       })
