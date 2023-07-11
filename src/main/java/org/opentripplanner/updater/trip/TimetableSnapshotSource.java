@@ -432,17 +432,23 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     // mark that previously created trip as DELETED.
     cancelPreviouslyAddedTrip(tripId, serviceDate, CancelationType.DELETE);
 
-    // Remove unknown assigned stops from the trip update
-    final List<StopTimeUpdate> stopTimeUpdates = removeUnknownAssignedStops(tripUpdate, tripId);
 
     var warnings = new ArrayList<UpdateSuccess.WarningType>(0);
 
-    if(stopTimeUpdates.size() < tripUpdate.getStopTimeUpdateCount()) {
+    // Remove unknown assigned stop ids from the trip update. The stop id will also be removed,
+    // as per the GTFS-realtime spec, stop_id == assigned_stop_id. So in that case,
+    // we just use the stop_sequence to find the stop to update, so the rest of the trip update can
+    // be applied without an invalid_stop_sequence error.
+    // This is valid because according to the spec, stop_sequence must be populated if assigned_stop_id is.
+    final List<StopTimeUpdate> stopTimeUpdates = removeUnknownAssignedStopIds(tripUpdate, tripId, warnings);
+
+    if (stopTimeUpdates.size() < tripUpdate.getStopTimeUpdateCount()) {
       warnings.add(UpdateSuccess.WarningType.UNKNOWN_ASSIGNED_STOPS_REMOVED_FROM_SCHEDULED_TRIP);
     }
 
     //Set the trip update's stop time updates to the filtered list
-    tripUpdate = tripUpdate.toBuilder().clearStopTimeUpdate().addAllStopTimeUpdate(stopTimeUpdates).build();
+    tripUpdate =
+      tripUpdate.toBuilder().clearStopTimeUpdate().addAllStopTimeUpdate(stopTimeUpdates).build();
 
     // Get new TripTimes based on scheduled timetable
     var result = pattern
@@ -483,9 +489,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       return buffer.update(newPattern, updatedTripTimes, serviceDate);
     } else {
       // Set the updated trip times in the buffer
-      return buffer.update(pattern, updatedTripTimes, serviceDate).mapSuccess(
-        success -> success.addWarnings(warnings)
-      );
+      return buffer
+        .update(pattern, updatedTripTimes, serviceDate)
+        .mapSuccess(success -> success.addWarnings(warnings));
     }
   }
 
@@ -576,36 +582,67 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
   }
 
   /**
-   * Remove any assigned stop that is not known in the static transit data.
+   * Remove the assigned_stop_id and stop_id from any stop time update that has an assigned_stop_id
+   * which is not known in the static transit data.
+   *
    * @param tripUpdate GTFS-RT TripUpdate message
-   * @param tripId FeedScoped ID of the trip
-   * @return list of stop time updates with unknown stops removed
+   * @param tripId     FeedScoped ID of the trip
+   * @return list of stop time updates with unknown stop ids removed
    */
   @Nonnull
-  private List<StopTimeUpdate> removeUnknownAssignedStops(TripUpdate tripUpdate, FeedScopedId tripId) {
+  private List<StopTimeUpdate> removeUnknownAssignedStopIds(
+    TripUpdate tripUpdate,
+    FeedScopedId tripId,
+    List<UpdateSuccess.WarningType> warnings
+  ) {
     return tripUpdate
       .getStopTimeUpdateList()
       .stream()
-      .filter(StopTimeUpdate::hasStopId)
-      .filter(st -> {
-
+      .map(st -> {
         // Check if stop time properties exists, and an assigned stop is set
-        if (!st.hasStopTimeProperties() || !st.getStopTimeProperties().hasAssignedStopId())
-          return true;
+        if (
+          !st.hasStopTimeProperties() || !st.getStopTimeProperties().hasAssignedStopId()
+        ) return st;
 
         String assignedStopId = st.getStopTimeProperties().getAssignedStopId();
+
+        if (st.hasStopId()) {
+          debug(
+            tripId,
+            "Stop '{}' has an assigned stop id and a normal stop id. It is preferred to only use assigned stop id when this field is set.",
+            st.getStopId(),
+            assignedStopId);
+
+          if (!assignedStopId.equals(st.getStopId())) {
+            warnings.add(UpdateSuccess.WarningType.UNEQUAL_ASSIGNED_STOP_IDS_IN_SCHEDULED_TRIP);
+            debug(
+              tripId,
+              "Assigned Stop '{}' is not equal to Stop '{}'. Consider removing the stop_id field.",
+              assignedStopId,
+              st.getStopId());
+          }
+        }
 
         FeedScopedId feedScopedAssignedStopId = new FeedScopedId(
           tripId.getFeedId(),
           assignedStopId
         );
 
-
         var stopFound = transitService.getRegularStop(feedScopedAssignedStopId) != null;
         if (!stopFound) {
-          debug(tripId, "Assigned Stop '{}' not found in graph. Removing from SCHEDULED trip.", assignedStopId);
+          debug(
+            tripId,
+            "Assigned Stop '{}' not found in graph. Removing from SCHEDULED trip, using stop_sequence instead.",
+            assignedStopId
+          );
+
+          warnings.add(UpdateSuccess.WarningType.UNKNOWN_ASSIGNED_STOPS_REMOVED_FROM_SCHEDULED_TRIP);
+
+          //Remove the assigned stop id and stop id if the assigned stop id is not found
+          st = st.toBuilder().clearStopId().clearStopTimeProperties().build();
         }
-        return stopFound;
+
+        return st;
       })
       .toList();
   }
@@ -773,7 +810,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     // the route in this update doesn't already exist, but the update contains the information so it will be created
     else if (
       tripDescriptor.hasExtension(MfdzRealtimeExtensions.tripDescriptor) &&
-      !routeExists(tripId.getFeedId(), tripDescriptor)
+        !routeExists(tripId.getFeedId(), tripDescriptor)
     ) {
       FeedScopedId routeId = new FeedScopedId(tripId.getFeedId(), tripDescriptor.getRouteId());
 
@@ -885,7 +922,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
           debug(
             trip.getId(),
             "ADDED trip has invalid arrival time (compared to start date in " +
-            "TripDescriptor), skipping."
+              "TripDescriptor), skipping."
           );
           return UpdateError.result(trip.getId(), INVALID_ARRIVAL_TIME);
         }
@@ -899,7 +936,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
           debug(
             trip.getId(),
             "ADDED trip has invalid departure time (compared to start date in " +
-            "TripDescriptor), skipping."
+              "TripDescriptor), skipping."
           );
           return UpdateError.result(trip.getId(), INVALID_DEPARTURE_TIME);
         }

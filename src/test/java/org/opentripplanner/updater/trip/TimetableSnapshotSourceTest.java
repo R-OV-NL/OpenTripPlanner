@@ -618,6 +618,189 @@ public class TimetableSnapshotSourceTest {
       assertEquals(1, errors.get(NO_SERVICE_ON_DATE).size());
     }
 
+    /**
+     * This test tests that a valid assigned stop id gets assigned to the correct stop in the
+     * pattern, instead of the original stop id.
+     */
+    @Test
+    public void validAssignedStopId() {
+    }
+
+    /**
+     * This test tests that invalid assigned stop ids are ignored and don't cause an exception.
+     */
+    @Test
+    public void invalidAssignedStopId() {
+      // GIVEN
+
+      String scheduledTripId = "1.1";
+
+      var builder = new TripUpdateBuilder(
+        scheduledTripId,
+        SERVICE_DATE,
+        SCHEDULED,
+        transitModel.getTimeZone()
+      )
+        .addDelayedStopTime(1, 0, 0, "INVALID_ASSIGNED_ID")
+        .addDelayedStopTime(2, 60, 80)
+        .addDelayedStopTime(3, 90, 90);
+
+      var tripUpdate = builder.build();
+
+      var updater = defaultUpdater();
+
+      // WHEN
+      var result = updater.applyTripUpdates(
+        TRIP_MATCHER_NOOP,
+        REQUIRED_NO_DATA,
+        fullDataset,
+        List.of(tripUpdate),
+        feedId
+      );
+
+      // THEN
+      final TimetableSnapshot snapshot = updater.getTimetableSnapshot();
+
+      final FeedScopedId tripId = new FeedScopedId(feedId, scheduledTripId);
+      final Trip trip = transitModel.getTransitModelIndex().getTripForId().get(tripId);
+      final TripPattern originalTripPattern = transitModel
+        .getTransitModelIndex()
+        .getPatternForTrip()
+        .get(trip);
+
+      final Timetable originalTimetableForToday = snapshot.resolve(
+        originalTripPattern,
+        SERVICE_DATE
+      );
+      final Timetable originalTimetableScheduled = snapshot.resolve(originalTripPattern, null);
+
+      assertNotSame(originalTimetableForToday, originalTimetableScheduled);
+
+      final int originalTripIndexScheduled = originalTimetableScheduled.getTripIndex(tripId);
+      assertTrue(
+        originalTripIndexScheduled > -1,
+        "Original trip should be found in scheduled time table"
+      );
+      final TripTimes originalTripTimesScheduled = originalTimetableScheduled.getTripTimes(
+        originalTripIndexScheduled
+      );
+      assertFalse(
+        originalTripTimesScheduled.isCanceledOrDeleted(),
+        "Original trip times should not be canceled in scheduled time table"
+      );
+      assertEquals(RealTimeState.SCHEDULED, originalTripTimesScheduled.getRealTimeState());
+
+      final int originalTripIndexForToday = originalTimetableForToday.getTripIndex(tripId);
+      assertTrue(
+        originalTripIndexForToday > -1,
+        "Original trip should be found in time table for service date"
+      );
+      final TripTimes originalTripTimesForToday = originalTimetableForToday.getTripTimes(
+        originalTripIndexForToday
+      );
+      assertEquals(RealTimeState.UPDATED, originalTripTimesForToday.getRealTimeState());
+      assertEquals(0, originalTripTimesForToday.getArrivalDelay(0));
+      assertEquals(0, originalTripTimesForToday.getDepartureDelay(0));
+      assertEquals(60, originalTripTimesForToday.getArrivalDelay(1));
+      assertEquals(80, originalTripTimesForToday.getDepartureDelay(1));
+      assertEquals(90, originalTripTimesForToday.getArrivalDelay(2));
+      assertEquals(90, originalTripTimesForToday.getDepartureDelay(2));
+
+      //There should be an error in the result about the removed invalid assigned stop.
+      assertEquals(1, result.warnings().size());
+
+      //The warning should be of type: UNKNOWN_ASSIGNED_STOPS_REMOVED_FROM_SCHEDULED_TRIP
+      assertEquals(WarningType.UNKNOWN_ASSIGNED_STOPS_REMOVED_FROM_SCHEDULED_TRIP, result.warnings().get(0));
+    }
+
+    /**
+     * This test tests that both stop_id and assigned_stop_id are set, if they are not equal, a
+     * warning is added to the result.
+     */
+    @Test
+    public void unequalStopIdAndAssignedStopId() {
+      // GIVEN
+
+      String scheduledTripId = "1.1";
+
+      var builder = new TripUpdateBuilder(
+        scheduledTripId,
+        SERVICE_DATE,
+        SCHEDULED,
+        transitModel.getTimeZone()
+      )
+        .addDelayedStopTime(1, 0, 0, "A", "B")
+        .addDelayedStopTime(2, 60, 80)
+        .addDelayedStopTime(3, 90, 90);
+
+      var tripUpdate = builder.build();
+
+      var updater = defaultUpdater();
+
+      // WHEN
+      var result = updater.applyTripUpdates(
+        TRIP_MATCHER_NOOP,
+        REQUIRED_NO_DATA,
+        fullDataset,
+        List.of(tripUpdate),
+        feedId
+      );
+
+      // THEN
+      final TimetableSnapshot snapshot = updater.getTimetableSnapshot();
+
+      final FeedScopedId tripId = new FeedScopedId(feedId, scheduledTripId);
+      final Trip trip = transitModel.getTransitModelIndex().getTripForId().get(tripId);
+      final TripPattern originalTripPattern = transitModel
+        .getTransitModelIndex()
+        .getPatternForTrip()
+        .get(trip);
+
+      final Timetable originalTimetableForToday = snapshot.resolve(
+        originalTripPattern,
+        SERVICE_DATE
+      );
+      final Timetable originalTimetableScheduled = snapshot.resolve(originalTripPattern, null);
+
+      assertNotSame(originalTimetableForToday, originalTimetableScheduled);
+
+      final int originalTripIndexScheduled = originalTimetableScheduled.getTripIndex(tripId);
+      assertTrue(
+        originalTripIndexScheduled > -1,
+        "Original trip should be found in scheduled time table"
+      );
+      final TripTimes originalTripTimesScheduled = originalTimetableScheduled.getTripTimes(
+        originalTripIndexScheduled
+      );
+      assertFalse(
+        originalTripTimesScheduled.isCanceledOrDeleted(),
+        "Original trip times should not be canceled in scheduled time table"
+      );
+      assertEquals(RealTimeState.SCHEDULED, originalTripTimesScheduled.getRealTimeState());
+
+      final int originalTripIndexForToday = originalTimetableForToday.getTripIndex(tripId);
+      assertTrue(
+        originalTripIndexForToday > -1,
+        "Original trip should be found in time table for service date"
+      );
+      final TripTimes originalTripTimesForToday = originalTimetableForToday.getTripTimes(
+        originalTripIndexForToday
+      );
+      assertEquals(RealTimeState.UPDATED, originalTripTimesForToday.getRealTimeState());
+      assertEquals(0, originalTripTimesForToday.getArrivalDelay(0));
+      assertEquals(0, originalTripTimesForToday.getDepartureDelay(0));
+      assertEquals(60, originalTripTimesForToday.getArrivalDelay(1));
+      assertEquals(80, originalTripTimesForToday.getDepartureDelay(1));
+      assertEquals(90, originalTripTimesForToday.getArrivalDelay(2));
+      assertEquals(90, originalTripTimesForToday.getDepartureDelay(2));
+
+      //There should also be a warning in the result about having mismatched stop_id and assigned_stop_id
+      assertEquals(1, result.warnings().size());
+
+      //The warning should be of type: UNKNOWN_ASSIGNED_STOPS_REMOVED_FROM_SCHEDULED_TRIP
+      assertEquals(WarningType.UNEQUAL_ASSIGNED_STOP_IDS_IN_SCHEDULED_TRIP, result.warnings().get(0));
+    }
+
     @Test
     public void scheduledTripWithSkippedAndNoData() {
       // GIVEN

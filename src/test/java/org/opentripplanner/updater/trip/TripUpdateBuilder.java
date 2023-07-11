@@ -81,6 +81,43 @@ public class TripUpdateBuilder {
     );
   }
 
+  public TripUpdateBuilder addDelayedStopTime(
+    int stopSequence,
+    int arrivalDelay,
+    int departureDelay,
+    String assignedStopId
+  ) {
+    return addStopTime(
+      null,
+      assignedStopId,
+      NO_VALUE,
+      stopSequence,
+      arrivalDelay,
+      departureDelay,
+      DEFAULT_SCHEDULE_RELATIONSHIP,
+      null
+    );
+  }
+
+  public TripUpdateBuilder addDelayedStopTime(
+    int stopSequence,
+    int arrivalDelay,
+    int departureDelay,
+    String stopId,
+    String assignedStopId
+  ) {
+    return addStopTime(
+      stopId,
+      assignedStopId,
+      NO_VALUE,
+      stopSequence,
+      arrivalDelay,
+      departureDelay,
+      DEFAULT_SCHEDULE_RELATIONSHIP,
+      null
+    );
+  }
+
   public TripUpdateBuilder addStopTime(
     int stopSequence,
     StopTimeUpdate.ScheduleRelationship scheduleRelationship
@@ -99,6 +136,7 @@ public class TripUpdateBuilder {
 
   private TripUpdateBuilder addStopTime(
     String stopId,
+    String assignedStopId,
     int minutes,
     int stopSequence,
     int arrivalDelay,
@@ -111,6 +149,12 @@ public class TripUpdateBuilder {
 
     if (stopId != null) {
       stopTimeUpdateBuilder.setStopId(stopId);
+    }
+
+    if (assignedStopId != null) {
+      stopTimeUpdateBuilder.setStopTimeProperties(
+        StopTimeUpdate.StopTimeProperties.newBuilder().setAssignedStopId(assignedStopId).build()
+      );
     }
 
     if (stopSequence > NO_VALUE) {
@@ -144,6 +188,27 @@ public class TripUpdateBuilder {
     }
 
     return this;
+  }
+
+  private TripUpdateBuilder addStopTime(
+    String stopId,
+    int minutes,
+    int stopSequence,
+    int arrivalDelay,
+    int departureDelay,
+    StopTimeUpdate.ScheduleRelationship scheduleRelationShip,
+    DropOffPickupType pickDrop
+  ) {
+    return addStopTime(
+      stopId,
+      null,
+      minutes,
+      stopSequence,
+      arrivalDelay,
+      departureDelay,
+      scheduleRelationShip,
+      pickDrop
+    );
   }
 
   public GtfsRealtime.TripUpdate build() {
