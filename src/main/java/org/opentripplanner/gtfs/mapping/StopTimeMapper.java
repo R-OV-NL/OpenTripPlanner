@@ -62,6 +62,7 @@ class StopTimeMapper {
 
       Stop stop = (Stop) rhs.getStop();
       lhs.setScheduledPlatform(stop.getPlatformCode());
+
     } else if (rhs.getStop() instanceof Location) {
       lhs.setStop(locationMapper.map((Location) rhs.getStop()));
     } else if (rhs.getStop() instanceof LocationGroup) {
