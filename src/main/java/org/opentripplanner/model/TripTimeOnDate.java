@@ -135,6 +135,14 @@ public class TripTimeOnDate {
       : tripTimes.getDepartureTime(stopIndex);
   }
 
+  public String getScheduledPlatform() {
+    return tripTimes.getScheduledPlatform(stopIndex);
+  }
+
+  public String getRealtimePlatform() {
+    return tripTimes.getRealtimePlatform(stopIndex);
+  }
+
   /**
    * Returns the actual arrival time if available. Otherwise -1 is returned.
    */
