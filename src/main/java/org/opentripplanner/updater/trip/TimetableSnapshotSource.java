@@ -467,6 +467,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     // Make sure that updated trip times have the correct real time state
     updatedTripTimes.setRealTimeState(RealTimeState.UPDATED);
 
+
     // If there are skipped stops, we need to change the pattern from the scheduled one
     if (skippedStopIndices.size() > 0) {
       StopPattern newStopPattern = pattern
