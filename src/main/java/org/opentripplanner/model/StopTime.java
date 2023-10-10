@@ -85,6 +85,9 @@ public final class StopTime implements Comparable<StopTime> {
     this.dropOffBookingInfo = st.dropOffBookingInfo;
     this.pickupBookingInfo = st.pickupBookingInfo;
     this.headsignVias = st.headsignVias;
+
+    this.scheduledPlatform = st.stop.getPlatformCode();
+    this.realtimePlatform = st.stop.getPlatformCode();
   }
 
   /**

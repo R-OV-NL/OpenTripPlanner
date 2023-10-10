@@ -453,6 +453,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     // Make sure that updated trip times have the correct real time state
     updatedTripTimes.setRealTimeState(RealTimeState.UPDATED);
 
+
     // If there are skipped stops, we need to change the pattern from the scheduled one
     if (skippedStopIndices.size() > 0) {
       StopPattern newStopPattern = pattern
@@ -1126,15 +1127,12 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     cancelScheduledTrip(tripId, serviceDate, CancelationType.DELETE);
 
     // Get extension fields
+    var extension = tripUpdate
+      .getTrip()
+      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
 
-    String realtimeTripId = tripUpdate
-      .getTrip()
-      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)
-      .getRealtimeTripId();
-    String tripShortName = tripUpdate
-      .getTrip()
-      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)
-      .getTripShortName();
+    String realtimeTripId = extension.getRealtimeTripId();
+    String tripShortName = extension.getTripShortName();
 
     TripBuilder modifiedTrip = trip.copy();
 
