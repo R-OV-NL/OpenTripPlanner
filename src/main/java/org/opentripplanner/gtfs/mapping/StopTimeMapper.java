@@ -59,6 +59,10 @@ class StopTimeMapper {
     lhs.setTrip(tripMapper.map(rhs.getTrip()));
     if (rhs.getStop() instanceof Stop) {
       lhs.setStop(stopMapper.map((Stop) rhs.getStop()));
+
+      Stop stop = (Stop) rhs.getStop();
+      lhs.setScheduledPlatform(stop.getPlatformCode());
+
     } else if (rhs.getStop() instanceof Location) {
       lhs.setStop(locationMapper.map((Location) rhs.getStop()));
     } else if (rhs.getStop() instanceof LocationGroup) {
@@ -82,6 +86,7 @@ class StopTimeMapper {
     lhs.setTimepoint(rhs.getTimepoint());
     lhs.setStopSequence(rhs.getStopSequence());
     lhs.setStopHeadsign(stopHeadsign);
+
     lhs.setRouteShortName(rhs.getRouteShortName());
     lhs.setPickupType(PickDropMapper.map(rhs.getPickupType()));
     lhs.setDropOffType(PickDropMapper.map(rhs.getDropOffType()));
