@@ -3758,6 +3758,16 @@ type Stoptime {
     realtimeArrival: Int
 
     """
+    Scheduled platform code (e.g. 2 or 2A) or null if not available.
+    """
+    scheduledPlatform: String
+
+    """
+    Realtime platform code (e.g. 2 or 2A) or null if not available.
+    """
+    realtimePlatform: String
+
+    """
     The offset from the scheduled arrival time in seconds. Negative values
     indicate that the trip is running ahead of schedule.
     """
@@ -3889,6 +3899,12 @@ type Trip implements Node {
     """List of dates when this trip is in service. Format: YYYYMMDD"""
     activeDates: [String]
     tripShortName: String
+
+    """Long (marketing/branding) name of the trip, only used in Dutch GTFS feeds"""
+    tripLongName: String
+
+    """Realtime Trip Id to match against Dutch internal systems, only used in Dutch GTFS feeds"""
+    realtimeTripId: String
 
     """Headsign of the vehicle when running on this trip"""
     tripHeadsign(

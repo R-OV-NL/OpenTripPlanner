@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.opentripplanner.framework.collection.MapUtils;
 import org.opentripplanner.framework.i18n.I18NString;
+import org.opentripplanner.gtfs.extension.TripExtension;
 import org.opentripplanner.transit.model.timetable.Trip;
 
 /** Responsible for mapping GTFS TripMapper into the OTP model. */
@@ -61,6 +62,11 @@ class TripMapper {
     lhs.withWheelchairBoarding(WheelchairAccessibilityMapper.map(rhs.getWheelchairAccessible()));
     lhs.withBikesAllowed(BikeAccessMapper.mapForTrip(rhs));
     lhs.withGtfsFareId(rhs.getFareId());
+
+    // Dutch GTFS extension
+    TripExtension tripExtension = rhs.getExtension(TripExtension.class);
+    lhs.withLongName(tripExtension.getTripLongName());
+    lhs.withRealtimeTripId(tripExtension.getRealtimeTripId());
 
     return lhs.build();
   }

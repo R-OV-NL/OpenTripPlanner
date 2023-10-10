@@ -94,6 +94,17 @@ public class TripTimes implements Serializable, Comparable<TripTimes> {
   private int[] departureTimes;
 
   /**
+   * The platform code for each stop. Non-final to allow updates.
+   * (The "Schedule" could change a few days before the trip runs, but after the export of the GTFS)
+   */
+  private String[] scheduledPlatforms;
+
+  /**
+   * The realtime platform code for each stop. Non-final to allow updates.
+   */
+  private String[] realtimePlatforms;
+
+  /**
    * States of the stops in the trip. If the state is DEFAULT for a stop, {@link #realTimeState}
    * should determine the realtime state of the stop.
    * <p>
@@ -128,6 +139,10 @@ public class TripTimes implements Serializable, Comparable<TripTimes> {
     final int[] departures = new int[nStops];
     final int[] arrivals = new int[nStops];
     final int[] sequences = new int[nStops];
+
+    final String[] scheduledPlatforms = new String[nStops];
+    final String[] realtimePlatforms = new String[nStops];
+
     final BitSet timepoints = new BitSet(nStops);
     // Times are always shifted to zero. This is essential for frequencies and deduplication.
     this.timeShift = stopTimes.iterator().next().getArrivalTime();
@@ -140,6 +155,9 @@ public class TripTimes implements Serializable, Comparable<TripTimes> {
       sequences[s] = st.getStopSequence();
       timepoints.set(s, st.getTimepoint() == 1);
 
+      scheduledPlatforms[s] = st.getScheduledPlatform();
+      realtimePlatforms[s] = st.getRealtimePlatform();
+
       dropOffBookingInfos.add(st.getDropOffBookingInfo());
       pickupBookingInfos.add(st.getPickupBookingInfo());
       s++;
@@ -150,6 +168,9 @@ public class TripTimes implements Serializable, Comparable<TripTimes> {
     this.headsigns =
       deduplicator.deduplicateObjectArray(I18NString.class, makeHeadsignsArray(stopTimes));
     this.headsignVias = deduplicator.deduplicateString2DArray(makeHeadsignViasArray(stopTimes));
+
+    this.scheduledPlatforms = deduplicator.deduplicateStringArray(scheduledPlatforms);
+    this.realtimePlatforms = deduplicator.deduplicateStringArray(realtimePlatforms);
 
     this.dropOffBookingInfos =
       deduplicator.deduplicateImmutableList(BookingInfo.class, dropOffBookingInfos);
@@ -184,6 +205,9 @@ public class TripTimes implements Serializable, Comparable<TripTimes> {
     this.timepoints = object.timepoints;
     this.wheelchairAccessibility = object.wheelchairAccessibility;
     this.occupancyStatus = object.occupancyStatus;
+
+    this.scheduledPlatforms = object.scheduledPlatforms;
+    this.realtimePlatforms = object.realtimePlatforms;
   }
 
   /**
@@ -256,6 +280,26 @@ public class TripTimes implements Serializable, Comparable<TripTimes> {
     if (departureTimes == null) {
       return getScheduledDepartureTime(stop);
     } else return departureTimes[stop]; // updated times are not time shifted.
+  }
+
+  /** @return the scheduled platform code for the stop. */
+  public String getScheduledPlatform(final int stop) {
+    return scheduledPlatforms[stop];
+  }
+
+  /** Set the scheduled platform code for the stop. */
+  public void setScheduledPlatform(final int stop, final String platform) {
+    scheduledPlatforms[stop] = platform;
+  }
+
+  /** @return the realtime platform code for the stop. */
+  public String getRealtimePlatform(final int stop) {
+    return realtimePlatforms[stop];
+  }
+
+  /** Set the realtime platform code for the stop. */
+  public void setRealtimePlatform(final int stop, final String platform) {
+    realtimePlatforms[stop] = platform;
   }
 
   /** @return the difference between the scheduled and actual arrival times at this stop. */
