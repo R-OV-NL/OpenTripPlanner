@@ -19,6 +19,7 @@ import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.TripDescriptor;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
+import com.google.transit.realtime.GtfsRealtimeOVapi;
 import de.mfdz.MfdzRealtimeExtensions;
 import java.text.ParseException;
 import java.time.Duration;
@@ -54,6 +55,7 @@ import org.opentripplanner.transit.model.organization.Agency;
 import org.opentripplanner.transit.model.site.StopLocation;
 import org.opentripplanner.transit.model.timetable.RealTimeState;
 import org.opentripplanner.transit.model.timetable.Trip;
+import org.opentripplanner.transit.model.timetable.TripBuilder;
 import org.opentripplanner.transit.model.timetable.TripTimes;
 import org.opentripplanner.transit.service.DefaultTransitService;
 import org.opentripplanner.transit.service.TransitEditorService;
@@ -333,9 +335,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
 
     var updateResult = UpdateResult.ofResults(results);
 
-    if (fullDataset) {
-      logUpdateResult(feedId, failuresByRelationship, updateResult);
-    }
+    //if (fullDataset) {
+    logUpdateResult(feedId, failuresByRelationship, updateResult);
+    //}
     return updateResult;
   }
 
@@ -450,6 +452,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
 
     // Make sure that updated trip times have the correct real time state
     updatedTripTimes.setRealTimeState(RealTimeState.UPDATED);
+
 
     // If there are skipped stops, we need to change the pattern from the scheduled one
     if (skippedStopIndices.size() > 0) {
@@ -575,7 +578,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     final List<StopLocation> stops = new ArrayList<>(stopTimeUpdates.size());
 
     for (int index = 0; index < stopTimeUpdates.size(); ++index) {
-      final StopTimeUpdate stopTimeUpdate = stopTimeUpdates.get(index);
+      StopTimeUpdate stopTimeUpdate = stopTimeUpdates.get(index);
 
       // Check stop sequence
       if (stopTimeUpdate.hasStopSequence()) {
@@ -619,7 +622,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         return null;
       }
 
-      if(stopTimeUpdate.getScheduleRelationship() != StopTimeUpdate.ScheduleRelationship.SKIPPED) {
+      if (stopTimeUpdate.getScheduleRelationship() != StopTimeUpdate.ScheduleRelationship.SKIPPED) {
         // Check arrival time
         if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
           // Check for increasing time
@@ -630,8 +633,14 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
           }
           previousTime = time;
         } else {
-          debug(tripId, "Trip update misses arrival time, skipping.");
-          return null;
+          debug(tripId, "Trip update misses arrival time, setting the arrival to the departure.");
+          //Copy the current departure time to the arrival time, make a new stoptime update using the builder.
+
+          StopTimeUpdate.Builder builder = stopTimeUpdate.toBuilder();
+          builder.getArrivalBuilder().setTime(stopTimeUpdate.getDeparture().getTime());
+          builder.getArrivalBuilder().setDelay(stopTimeUpdate.getDeparture().getDelay());
+
+          stopTimeUpdate = builder.build();
         }
 
         // Check departure time
@@ -688,6 +697,20 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     // TODO: which Agency ID to use? Currently use feed id.
     var tripBuilder = Trip.of(tripId);
     tripBuilder.withRoute(route);
+
+    // Get extension fields
+
+    String realtimeTripId = tripUpdate
+      .getTrip()
+      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)
+      .getRealtimeTripId();
+    String tripShortName = tripUpdate
+      .getTrip()
+      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)
+      .getTripShortName();
+
+    tripBuilder.withRealtimeTripId(realtimeTripId);
+    tripBuilder.withShortName(tripShortName);
 
     // Find service ID running on this service date
     final Set<FeedScopedId> serviceIds = transitService
@@ -831,6 +854,18 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       final StopTime stopTime = new StopTime();
       stopTime.setTrip(trip);
       stopTime.setStop(stop);
+
+      // Set Dutch specific fields
+      String plannedPlatform = stopTimeUpdate
+        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+        .getScheduledTrack();
+      String actualPlatform = stopTimeUpdate
+        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+        .getActualTrack();
+
+      stopTime.setPlannedPlatform(plannedPlatform);
+      stopTime.setRealtimePlatform(actualPlatform);
+
       // Set arrival time
       if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
         final long arrivalTime = stopTimeUpdate.getArrival().getTime() - midnightSecondsSinceEpoch;
@@ -865,6 +900,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       var added = AddedStopTime.ofStopTime(stopTimeUpdate);
       stopTime.setPickupType(added.pickup());
       stopTime.setDropOffType(added.dropOff());
+
       // Add stop time to list
       stopTimes.add(stopTime);
     }
@@ -1091,13 +1127,29 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     var tripId = trip.getId();
     cancelScheduledTrip(tripId, serviceDate, CancelationType.DELETE);
 
+    // Get extension fields
+
+    String realtimeTripId = tripUpdate
+      .getTrip()
+      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)
+      .getRealtimeTripId();
+    String tripShortName = tripUpdate
+      .getTrip()
+      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)
+      .getTripShortName();
+
+    TripBuilder modifiedTrip = trip.copy();
+
+    modifiedTrip.withRealtimeTripId(realtimeTripId);
+    modifiedTrip.withShortName(tripShortName);
+
     // Check whether trip id has been used for previously ADDED/REPLACEMENT trip message and mark it
     // as DELETED
     cancelPreviouslyAddedTrip(tripId, serviceDate, CancelationType.DELETE);
 
     // Add new trip
     return addTripToGraphAndBuffer(
-      trip,
+      modifiedTrip.build(),
       tripUpdate.getVehicle(),
       tripUpdate.getStopTimeUpdateList(),
       stops,

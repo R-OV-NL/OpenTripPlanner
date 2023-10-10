@@ -62,6 +62,16 @@ public class StoptimeImpl implements GraphQLDataFetchers.GraphQLStoptime {
   }
 
   @Override
+  public DataFetcher<String> scheduledPlatform() {
+    return environment -> getSource(environment).getScheduledPlatform();
+  }
+
+  @Override
+  public DataFetcher<String> realtimePlatform() {
+    return environment -> getSource(environment).getRealtimePlatform();
+  }
+
+  @Override
   public DataFetcher<Integer> realtimeDeparture() {
     return environment -> missingValueToNull(getSource(environment).getRealtimeDeparture());
   }

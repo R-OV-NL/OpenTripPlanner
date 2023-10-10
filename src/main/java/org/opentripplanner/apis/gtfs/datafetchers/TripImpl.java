@@ -366,6 +366,16 @@ public class TripImpl implements GraphQLDataFetchers.GraphQLTrip {
   }
 
   @Override
+  public DataFetcher<String> tripLongName() {
+    return environment -> getSource(environment).getLongName();
+  }
+
+  @Override
+  public DataFetcher<String> realtimeTripId() {
+    return environment -> getSource(environment).getRealtimeTripId();
+  }
+
+  @Override
   public DataFetcher<GraphQLTypes.GraphQLWheelchairBoarding> wheelchairAccessible() {
     return environment -> GraphQLUtils.toGraphQL(getSource(environment).getWheelchairBoarding());
   }
