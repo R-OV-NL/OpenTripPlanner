@@ -29,6 +29,8 @@ public class ApiPlace {
    */
   public String platformCode = null;
 
+
+
   /**
    * The longitude of the place.
    */

@@ -237,13 +237,11 @@ public class Timetable implements Serializable {
 
       if (match) {
         // Set Dutch specific fields
-        String plannedPlatform = update
-          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-          .getScheduledTrack();
+        var extension = update.getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate);
+        
+        String plannedPlatform = extension.getScheduledTrack();
 
-        String actualPlatform = update
-          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-          .getActualTrack();
+        String actualPlatform = extension.getActualTrack();
 
         if (!plannedPlatform.isEmpty()) newTimes.setScheduledPlatform(i, plannedPlatform);
 
@@ -337,14 +335,11 @@ public class Timetable implements Serializable {
       }
 
       if(update != null) {
+        var extension = update.getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate);
         // Set Dutch specific fields
-        String plannedPlatform = update
-          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-          .getScheduledTrack();
+        String plannedPlatform = extension.getScheduledTrack();
 
-        String actualPlatform = update
-          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-          .getActualTrack();
+        String actualPlatform = extension.getActualTrack();
 
         if(!plannedPlatform.isEmpty())
           newTimes.setScheduledPlatform(i, plannedPlatform);
