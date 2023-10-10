@@ -65,6 +65,10 @@ class StopTimeMapper {
     );
     switch (stopLocation) {
       case Stop stop -> lhs.setStop(stopMapper.map(stop));
+      //      lhs.setStop(stopMapper.map((Stop) rhs.getStop()));
+      //
+      //      Stop stop = (Stop) rhs.getStop();
+      //      lhs.setScheduledPlatform(stop.getPlatformCode());
       case Location location -> lhs.setStop(locationMapper.map(location));
       case LocationGroup locGroup -> lhs.setStop(locationGroupMapper.map(locGroup));
       default -> throw new IllegalArgumentException(
@@ -89,6 +93,7 @@ class StopTimeMapper {
     lhs.setTimepoint(rhs.getTimepoint());
     lhs.setStopSequence(rhs.getStopSequence());
     lhs.setStopHeadsign(stopHeadsign);
+
     lhs.setRouteShortName(rhs.getRouteShortName());
     lhs.setPickupType(PickDropMapper.map(rhs.getPickupType()));
     lhs.setDropOffType(PickDropMapper.map(rhs.getDropOffType()));
