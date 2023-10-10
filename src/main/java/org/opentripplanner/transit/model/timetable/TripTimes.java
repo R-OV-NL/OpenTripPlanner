@@ -97,12 +97,12 @@ public class TripTimes implements Serializable, Comparable<TripTimes> {
    * The platform code for each stop. Non-final to allow updates.
    * (The "Schedule" could change a few days before the trip runs, but after the export of the GTFS)
    */
-  private String[] scheduledPlatforms;
+  private final String[] scheduledPlatforms;
 
   /**
    * The realtime platform code for each stop. Non-final to allow updates.
    */
-  private String[] realtimePlatforms;
+  private final String[] realtimePlatforms;
 
   /**
    * States of the stops in the trip. If the state is DEFAULT for a stop, {@link #realTimeState}
@@ -162,6 +162,7 @@ public class TripTimes implements Serializable, Comparable<TripTimes> {
       pickupBookingInfos.add(st.getPickupBookingInfo());
       s++;
     }
+
     this.scheduledDepartureTimes = deduplicator.deduplicateIntArray(departures);
     this.scheduledArrivalTimes = deduplicator.deduplicateIntArray(arrivals);
     this.originalGtfsStopSequence = deduplicator.deduplicateIntArray(sequences);
@@ -169,8 +170,8 @@ public class TripTimes implements Serializable, Comparable<TripTimes> {
       deduplicator.deduplicateObjectArray(I18NString.class, makeHeadsignsArray(stopTimes));
     this.headsignVias = deduplicator.deduplicateString2DArray(makeHeadsignViasArray(stopTimes));
 
-    this.scheduledPlatforms = deduplicator.deduplicateStringArray(scheduledPlatforms);
-    this.realtimePlatforms = deduplicator.deduplicateStringArray(realtimePlatforms);
+    this.scheduledPlatforms = scheduledPlatforms;
+    this.realtimePlatforms = realtimePlatforms;
 
     this.dropOffBookingInfos =
       deduplicator.deduplicateImmutableList(BookingInfo.class, dropOffBookingInfos);

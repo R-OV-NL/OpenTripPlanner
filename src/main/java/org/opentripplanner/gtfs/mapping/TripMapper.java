@@ -65,8 +65,11 @@ class TripMapper {
 
     // Dutch GTFS extension
     TripExtension tripExtension = rhs.getExtension(TripExtension.class);
-    lhs.withLongName(tripExtension.getTripLongName());
-    lhs.withRealtimeTripId(tripExtension.getRealtimeTripId());
+
+    if (tripExtension != null) {
+      lhs.withLongName(tripExtension.getTripLongName());
+      lhs.withRealtimeTripId(tripExtension.getRealtimeTripId());
+    }
 
     return lhs.build();
   }

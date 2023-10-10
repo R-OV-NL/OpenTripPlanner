@@ -453,7 +453,6 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     // Make sure that updated trip times have the correct real time state
     updatedTripTimes.setRealTimeState(RealTimeState.UPDATED);
 
-
     // If there are skipped stops, we need to change the pattern from the scheduled one
     if (skippedStopIndices.size() > 0) {
       StopPattern newStopPattern = pattern
@@ -700,17 +699,17 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
 
     // Get extension fields
 
-    String realtimeTripId = tripUpdate
+    var extension = tripUpdate
       .getTrip()
-      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)
-      .getRealtimeTripId();
-    String tripShortName = tripUpdate
-      .getTrip()
-      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)
-      .getTripShortName();
+      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
 
-    tripBuilder.withRealtimeTripId(realtimeTripId);
-    tripBuilder.withShortName(tripShortName);
+    if(extension != null) {
+      String realtimeTripId = extension.getRealtimeTripId();
+      String tripShortName = extension.getTripShortName();
+
+      tripBuilder.withRealtimeTripId(realtimeTripId);
+      tripBuilder.withShortName(tripShortName);
+    }
 
     // Find service ID running on this service date
     final Set<FeedScopedId> serviceIds = transitService
@@ -855,7 +854,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       stopTime.setTrip(trip);
       stopTime.setStop(stop);
 
-      // Set Dutch specific fields
+      //Set Dutch specific fields
       String plannedPlatform = stopTimeUpdate
         .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
         .getScheduledTrack();
@@ -863,8 +862,11 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
         .getActualTrack();
 
-      stopTime.setPlannedPlatform(plannedPlatform);
-      stopTime.setRealtimePlatform(actualPlatform);
+      if(!plannedPlatform.isBlank())
+        stopTime.setScheduledPlatform(plannedPlatform);
+
+      if(!actualPlatform.isBlank())
+        stopTime.setRealtimePlatform(actualPlatform);
 
       // Set arrival time
       if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
