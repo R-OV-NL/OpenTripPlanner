@@ -1,0 +1,8 @@
+{
+  "otpFeatures" : {
+    "ParallelRouting": true,
+    "TransferConstraints": false,
+    "OptimizeTransfers": true,
+    "MinimumTransferTimeIsDefinitive": true
+  }
+}
