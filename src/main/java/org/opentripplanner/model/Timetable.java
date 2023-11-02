@@ -235,7 +235,7 @@ public class Timetable implements Serializable {
       if (match) {
         // Set Dutch specific fields
         var extension = update.getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate);
-        
+
         String plannedPlatform = extension.getScheduledTrack();
 
         String actualPlatform = extension.getActualTrack();
