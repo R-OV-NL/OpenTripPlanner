@@ -323,21 +323,6 @@ public class Timetable implements Serializable {
         newTimes.updateArrivalDelay(i, delay);
         newTimes.updateDepartureDelay(i, delay);
       }
-
-      if(update != null) {
-        var extension = update.getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate);
-        // Set Dutch specific fields
-        String plannedPlatform = extension.getScheduledTrack();
-
-        String actualPlatform = extension.getActualTrack();
-
-        if(!plannedPlatform.isEmpty())
-          newTimes.setScheduledPlatform(i, plannedPlatform);
-
-        if(!actualPlatform.isEmpty())
-          newTimes.setRealtimePlatform(i, actualPlatform);
-      }
-
     }
     if (update != null) {
       LOG.debug(
