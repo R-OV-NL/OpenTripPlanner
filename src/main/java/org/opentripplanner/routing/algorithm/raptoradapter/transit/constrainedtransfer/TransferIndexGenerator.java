@@ -285,17 +285,43 @@ public class TransferIndexGenerator {
             )
           );
           continue;
+        } else {
+          LOG.info(
+            "Updated pattern for trip {}, does not match original for stop {} at pos {}. " +
+              "Using updated stop position in pattern.",
+            trip,
+            scheduledStop,
+            stopPosInPattern
+          );
+
+          // Find the expected stop in the new pattern, as its position in the pattern has been
+          // shifted due to added or removed (not just cancelled) stops in the realtime pattern.
+          int newStopPosInPattern = pattern.findStopPositionInPattern(scheduledStop);
+
+          if(newStopPosInPattern == -1) {
+            LOG.info(
+              "Updated pattern for trip {}, does not match original for stop {} at pos {}. " +
+                "Updated stop is not on pattern. Skipping transfer generation.",
+              trip,
+              scheduledStop,
+              stopPosInPattern
+            );
+
+            continue;
+          }
+
+          res.add(
+            new TPoint(
+              pattern,
+              createTransferPointForPattern(trip, pattern.stopIndex(newStopPosInPattern)),
+              trip,
+              newStopPosInPattern
+            )
+          );
         }
       }
-      LOG.info(
-        "Updated pattern for trip {}, does not match original for stop {} at pos {}. " +
-        "Skipping transfer generation.",
-        trip,
-        scheduledStop,
-        stopPosInPattern
-      );
-      // TODO - Find the expected stop in the new pattern, as its position in the pattern has been
-      //  shifted due to added or removed (not just cancelled) stops in the realtime pattern.
+
+
     }
 
     return List.copyOf(res);
