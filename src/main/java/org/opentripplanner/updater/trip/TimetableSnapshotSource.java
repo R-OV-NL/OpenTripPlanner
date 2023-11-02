@@ -713,9 +713,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
 
     // Get extension fields
 
-    var extension = tripUpdate
-      .getTrip()
-      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
+    var extension = tripUpdate.getTrip().getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
 
     if (extension != null) {
       String realtimeTripId = extension.getRealtimeTripId();
@@ -875,11 +873,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
         .getActualTrack();
 
-      if(!plannedPlatform.isBlank())
-        stopTime.setScheduledPlatform(plannedPlatform);
+      if (!plannedPlatform.isBlank()) stopTime.setScheduledPlatform(plannedPlatform);
 
-      if(!actualPlatform.isBlank())
-        stopTime.setRealtimePlatform(actualPlatform);
+      if (!actualPlatform.isBlank()) stopTime.setRealtimePlatform(actualPlatform);
 
       // Set arrival time
       if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
