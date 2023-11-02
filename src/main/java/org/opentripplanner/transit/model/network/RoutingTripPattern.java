@@ -2,6 +2,7 @@ package org.opentripplanner.transit.model.network;
 
 import java.io.Serializable;
 import java.util.BitSet;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.opentripplanner.raptor.api.model.RaptorTripPattern;
 import org.opentripplanner.routing.algorithm.raptoradapter.api.DefaultTripPattern;
@@ -108,6 +109,18 @@ public class RoutingTripPattern implements DefaultTripPattern, Serializable {
 
   public int transitReluctanceFactorIndex() {
     return transitReluctanceFactorIndex;
+  }
+
+  public int findStopPositionInPattern(StopLocation stop) {
+    List<StopLocation> stopsInPattern = this.pattern.getStops();
+
+    for (int i = 0; i < stopsInPattern.size(); i++) {
+      if (stopsInPattern.get(i).getId().equals(stop.getId())) {
+        return i;
+      }
+    }
+
+    return -1;
   }
 
   @Override

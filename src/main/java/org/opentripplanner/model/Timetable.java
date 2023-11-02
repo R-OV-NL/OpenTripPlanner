@@ -245,11 +245,9 @@ public class Timetable implements Serializable {
           .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
           .getActualTrack();
 
-        if (!plannedPlatform.isEmpty())
-          newTimes.setScheduledPlatform(i, plannedPlatform);
+        if (!plannedPlatform.isEmpty()) newTimes.setScheduledPlatform(i, plannedPlatform);
 
-        if (!actualPlatform.isEmpty())
-          newTimes.setRealtimePlatform(i, actualPlatform);
+        if (!actualPlatform.isEmpty()) newTimes.setRealtimePlatform(i, actualPlatform);
 
         StopTimeUpdate.ScheduleRelationship scheduleRelationship = update.hasScheduleRelationship()
           ? update.getScheduleRelationship()
@@ -337,7 +335,6 @@ public class Timetable implements Serializable {
         newTimes.updateArrivalDelay(i, delay);
         newTimes.updateDepartureDelay(i, delay);
       }
-
     }
     if (update != null) {
       LOG.debug(
