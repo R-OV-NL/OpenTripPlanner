@@ -83,6 +83,25 @@ public class ServiceDateUtils {
     return localDate.atStartOfDay().plusSeconds(secondsSinceStartOfDay);
   }
 
+  /**
+   * Check if the given time is before 4 AM. This is used to determine if a trip is on the previous
+   * @param startOfServiceTime the start of service time in the format "HH:mm:ss"
+   * @return true if the given time is before 4 AM
+   * @throws ParseException if the given time is not in the format "HH:mm:ss"
+   */
+  public static boolean serviceStartTimeIsBefore4Am(String startOfServiceTime) throws ParseException {
+    //Check if the given time is in the format "HH:mm:ss"
+    if (!startOfServiceTime.matches("^\\d{2}:\\d{2}:\\d{2}$")) {
+      throw new ParseException("error parsing time: " + startOfServiceTime, 0);
+    }
+
+    // Get the hour of the start of service time
+    int hour = Integer.parseInt(startOfServiceTime.substring(0, 2));
+
+    // If the hour is less than 4, return true
+    return hour < 4;
+  }
+
   public static int secondsSinceStartOfService(
     ZonedDateTime operatingDayDate,
     ZonedDateTime dateTime,

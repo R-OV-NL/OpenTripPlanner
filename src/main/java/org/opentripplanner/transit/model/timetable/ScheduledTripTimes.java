@@ -48,6 +48,7 @@ public final class ScheduledTripTimes implements TripTimes {
   private final int serviceCode;
   private final int[] arrivalTimes;
   private final int[] departureTimes;
+  private final String[] platforms;
   private final BitSet timepoints;
   private final Trip trip;
   private final List<BookingInfo> dropOffBookingInfos;
@@ -78,6 +79,7 @@ public final class ScheduledTripTimes implements TripTimes {
     this.dropOffBookingInfos = Objects.requireNonNull(builder.dropOffBookingInfos());
     this.headsigns = builder.headsigns();
     this.headsignVias = builder.headsignVias();
+    this.platforms = builder.platforms();
     this.originalGtfsStopSequence = builder.originalGtfsStopSequence();
     validate();
   }
@@ -101,6 +103,7 @@ public final class ScheduledTripTimes implements TripTimes {
       serviceCode,
       arrivalTimes,
       departureTimes,
+      platforms,
       timepoints,
       trip,
       dropOffBookingInfos,
@@ -162,6 +165,33 @@ public final class ScheduledTripTimes implements TripTimes {
   @Override
   public int getDepartureDelay(final int stop) {
     return getDepartureTime(stop) - timeShifted(departureTimes[stop]);
+  }
+
+  @Override
+  public String getScheduledPlatform(final int stop) {
+    return platforms[stop];
+  }
+
+  /**
+   * Sets the scheduled platform for the given stop.
+   * Although the schedule should be "static" and not change, the platform codes in the static GTFS
+   * feed may differ from the platforms that are marked as "scheduled" in the real-time feed.
+   * @netherlands Only used for the Netherlands GTFS-RT feed.
+   * @param stop stop index
+   * @param platform platform name
+   */
+  public void setScheduledPlatform(final int stop, final String platform) {
+    platforms[stop] = platform;
+  }
+
+  @Override
+  public String getRealtimePlatform(final int stop) {
+    return getScheduledPlatform(stop);
+  }
+
+  public void setRealtimePlatform(final int stop, final String platform) {
+    //TODO: Figure out if this is really needed
+    setScheduledPlatform(stop, platform);
   }
 
   @Override

@@ -39,6 +39,7 @@ class StopTimeToScheduledTripTimesMapper {
     final int[] departures = new int[nStops];
     final int[] arrivals = new int[nStops];
     final int[] sequences = new int[nStops];
+    final String[] platforms = new String[nStops];
     final BitSet timepoints = new BitSet(nStops);
 
     final List<BookingInfo> dropOffBookingInfos = new ArrayList<>();
@@ -49,7 +50,7 @@ class StopTimeToScheduledTripTimesMapper {
       arrivals[s] = st.getArrivalTime();
       sequences[s] = st.getStopSequence();
       timepoints.set(s, st.getTimepoint() == 1);
-
+      platforms[s] = st.getStop().getPlatformCode();
       dropOffBookingInfos.add(st.getDropOffBookingInfo());
       pickupBookingInfos.add(st.getPickupBookingInfo());
       s++;
@@ -57,6 +58,7 @@ class StopTimeToScheduledTripTimesMapper {
     builder
       .withDepartureTimes(departures)
       .withArrivalTimes(arrivals)
+      .withPlatforms(platforms)
       .withOriginalGtfsStopSequence(sequences)
       .withHeadsigns(makeHeadsignsArray(stopTimes))
       .withHeadsignVias(makeHeadsignViasArray(stopTimes))

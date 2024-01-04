@@ -288,7 +288,7 @@ public class TransferIndexGenerator {
         } else {
           LOG.info(
             "Updated pattern for trip {}, does not match original for stop {} at pos {}. " +
-              "Using updated stop position in pattern.",
+            "Using updated stop position in pattern.",
             trip,
             scheduledStop,
             stopPosInPattern
@@ -298,10 +298,10 @@ public class TransferIndexGenerator {
           // shifted due to added or removed (not just cancelled) stops in the realtime pattern.
           int newStopPosInPattern = pattern.findStopPositionInPattern(scheduledStop);
 
-          if(newStopPosInPattern == -1) {
+          if (newStopPosInPattern == -1) {
             LOG.info(
               "Updated pattern for trip {}, does not match original for stop {} at pos {}. " +
-                "Updated stop is not on pattern. Skipping transfer generation.",
+              "Updated stop is not on pattern. Skipping transfer generation.",
               trip,
               scheduledStop,
               stopPosInPattern
@@ -320,8 +320,6 @@ public class TransferIndexGenerator {
           );
         }
       }
-
-
     }
 
     return List.copyOf(res);

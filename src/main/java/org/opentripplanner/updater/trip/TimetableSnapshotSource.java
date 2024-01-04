@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -258,9 +259,12 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         FeedScopedId tripId = new FeedScopedId(feedId, tripUpdate.getTrip().getTripId());
 
         LocalDate serviceDate;
+        LocalDate serviceDateYesterday;
         if (tripDescriptor.hasStartDate()) {
           try {
             serviceDate = ServiceDateUtils.parseString(tripDescriptor.getStartDate());
+
+            serviceDateYesterday = serviceDate.minusDays(1);
           } catch (final ParseException e) {
             debug(
               tripId,
@@ -273,6 +277,22 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
           // TODO: figure out the correct service date. For the special case that a trip
           // starts for example at 40:00, yesterday would probably be a better guess.
           serviceDate = localDateNow.get();
+
+          serviceDateYesterday = serviceDate.minusDays(1);
+        }
+
+        boolean couldTripHaveStartedYesterday = false;
+        if(tripDescriptor.hasStartTime()) {
+          try {
+            couldTripHaveStartedYesterday = ServiceDateUtils.serviceStartTimeIsBefore4Am(tripDescriptor.getStartTime());
+          } catch (final ParseException e) {
+            debug(
+              tripId,
+              "Failed to parse start time in gtfs-rt trip update: {}",
+              tripDescriptor.getStartTime()
+            );
+            continue;
+          }
         }
 
         uIndex += 1;
@@ -292,6 +312,8 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
                 tripUpdate,
                 tripId,
                 serviceDate,
+                serviceDateYesterday,
+                couldTripHaveStartedYesterday,
                 backwardsDelayPropagationType
               );
               case ADDED -> validateAndHandleAddedTrip(
@@ -306,7 +328,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
                 tripUpdate,
                 tripDescriptor,
                 tripId,
-                serviceDate
+                serviceDate,
+                serviceDateYesterday,
+                couldTripHaveStartedYesterday
               );
               case UNSCHEDULED -> UpdateError.result(tripId, NOT_IMPLEMENTED_UNSCHEDULED);
               case DUPLICATED -> UpdateError.result(tripId, NOT_IMPLEMENTED_DUPLICATED);
@@ -411,6 +435,8 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     TripUpdate tripUpdate,
     FeedScopedId tripId,
     LocalDate serviceDate,
+    LocalDate serviceDateYesterday,
+    boolean couldTripHaveStartedYesterday,
     BackwardsDelayPropagationType backwardsDelayPropagationType
   ) {
     final TripPattern pattern = getPatternForTripId(tripId);
@@ -429,7 +455,8 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     final Set<LocalDate> serviceDates = transitService
       .getCalendarService()
       .getServiceDatesForServiceId(serviceId);
-    if (!serviceDates.contains(serviceDate)) {
+
+    if (!serviceDates.contains(serviceDate) && !(couldTripHaveStartedYesterday && serviceDates.contains(serviceDateYesterday))) {
       debug(
         tripId,
         "SCHEDULED trip has service date {} for which trip's service is not valid, skipping.",
@@ -1068,7 +1095,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     final TripUpdate tripUpdate,
     final TripDescriptor tripDescriptor,
     final FeedScopedId tripId,
-    final LocalDate serviceDate
+    final LocalDate serviceDate,
+    final LocalDate serviceDateYesterday,
+    final boolean couldTripHaveStartedYesterday
   ) {
     // Preconditions
     Objects.requireNonNull(tripUpdate);
@@ -1097,7 +1126,12 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       final Set<FeedScopedId> serviceIds = transitService
         .getCalendarService()
         .getServiceIdsOnDate(serviceDate);
-      if (!serviceIds.contains(trip.getServiceId())) {
+
+      final Set<FeedScopedId> serviceIdsYesterday = transitService
+        .getCalendarService()
+        .getServiceIdsOnDate(serviceDateYesterday);
+
+      if (!serviceIds.contains(trip.getServiceId()) && !(couldTripHaveStartedYesterday && serviceIdsYesterday.contains(trip.getServiceId()))) {
         // TODO: should we support this and change service id of trip?
         debug(tripId, "REPLACEMENT trip has a service date that is not served by trip, skipping.");
         return UpdateError.result(tripId, NO_SERVICE_ON_DATE);
@@ -1150,9 +1184,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     cancelScheduledTrip(tripId, serviceDate, CancelationType.DELETE);
 
     // Get extension fields
-    var extension = tripUpdate
-      .getTrip()
-      .getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
+    var extension = tripUpdate.getTrip().getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
 
     String realtimeTripId = extension.getRealtimeTripId();
     String tripShortName = extension.getTripShortName();

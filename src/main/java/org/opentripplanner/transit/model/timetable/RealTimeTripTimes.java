@@ -26,6 +26,7 @@ public final class RealTimeTripTimes implements TripTimes {
 
   private int[] arrivalTimes;
   private int[] departureTimes;
+  private String[] platforms;
   private RealTimeState realTimeState;
   private StopRealTimeState[] stopRealTimeStates;
   private I18NString[] headsigns;
@@ -39,7 +40,8 @@ public final class RealTimeTripTimes implements TripTimes {
       null,
       null,
       null,
-      scheduledTripTimes.getWheelchairAccessibility()
+      scheduledTripTimes.getWheelchairAccessibility(),
+      scheduledTripTimes.copyOfNoDuplication().platforms()
     );
   }
 
@@ -50,7 +52,8 @@ public final class RealTimeTripTimes implements TripTimes {
       original.stopRealTimeStates,
       original.headsigns,
       original.occupancyStatus,
-      original.wheelchairAccessibility
+      original.wheelchairAccessibility,
+      scheduledTripTimes.copyOfNoDuplication().platforms()
     );
   }
 
@@ -60,7 +63,8 @@ public final class RealTimeTripTimes implements TripTimes {
     StopRealTimeState[] stopRealTimeStates,
     I18NString[] headsigns,
     OccupancyStatus[] occupancyStatus,
-    Accessibility wheelchairAccessibility
+    Accessibility wheelchairAccessibility,
+    String[] platforms
   ) {
     this.scheduledTripTimes = scheduledTripTimes;
     this.realTimeState = realTimeState;
@@ -68,7 +72,7 @@ public final class RealTimeTripTimes implements TripTimes {
     this.headsigns = headsigns;
     this.occupancyStatus = occupancyStatus;
     this.wheelchairAccessibility = wheelchairAccessibility;
-
+    this.platforms = platforms;
     // We set these to null to indicate that this is a non-updated/scheduled TripTimes.
     // We cannot point to the scheduled times because we do not want to make an unnecessary copy.
     this.arrivalTimes = null;
@@ -168,6 +172,26 @@ public final class RealTimeTripTimes implements TripTimes {
 
   public void setRecorded(int stop) {
     setStopRealTimeStates(stop, StopRealTimeState.RECORDED);
+  }
+
+  public String getRealtimePlatform(int stop) {
+    return platforms[stop];
+  }
+
+  public void setRealtimePlatform(int stop, String platform) {
+    prepareForRealTimeUpdates();
+    if(!platforms[stop].equals(platform))
+      System.out.println("Platform changed from " + platforms[stop] + " to " + platform);
+
+    platforms[stop] = platform;
+  }
+
+  public String getScheduledPlatform(int stop) {
+    return scheduledTripTimes.getScheduledPlatform(stop);
+  }
+
+  public void setScheduledPlatform(int stop, String platform) {
+    scheduledTripTimes.setScheduledPlatform(stop, platform);
   }
 
   public void setCancelled(int stop) {
