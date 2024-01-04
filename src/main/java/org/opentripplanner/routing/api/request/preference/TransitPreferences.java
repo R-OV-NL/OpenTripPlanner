@@ -138,7 +138,7 @@ public final class TransitPreferences implements Serializable {
   }
 
   /**
-   * When true, realtime updates are ignored during this search.
+   * When true, real-time updates are ignored during this search.
    */
   public boolean ignoreRealtimeUpdates() {
     return ignoreRealtimeUpdates;
@@ -174,7 +174,7 @@ public final class TransitPreferences implements Serializable {
       boardSlack.equals(that.boardSlack) &&
       alightSlack.equals(that.alightSlack) &&
       reluctanceForMode.equals(that.reluctanceForMode) &&
-      otherThanPreferredRoutesPenalty == that.otherThanPreferredRoutesPenalty &&
+      Objects.equals(otherThanPreferredRoutesPenalty, that.otherThanPreferredRoutesPenalty) &&
       unpreferredCost.equals(that.unpreferredCost) &&
       Objects.equals(relaxTransitPriorityGroup, that.relaxTransitPriorityGroup) &&
       ignoreRealtimeUpdates == that.ignoreRealtimeUpdates &&

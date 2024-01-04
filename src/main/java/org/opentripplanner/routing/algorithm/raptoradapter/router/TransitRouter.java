@@ -177,7 +177,7 @@ public class TransitRouter {
 
     if (OTPFeature.ParallelRouting.isOn()) {
       try {
-        // TODO: This is not using {@link OtpRequestThreadFactory} witch mean we do not get
+        // TODO: This is not using {@link OtpRequestThreadFactory} which mean we do not get
         //       log-trace-parameters-propagation and graceful timeout handling here.
         CompletableFuture
           .allOf(
@@ -340,8 +340,7 @@ public class TransitRouter {
    * origin and destination.
    */
   private void checkIfTransitConnectionExists(RaptorResponse<TripSchedule> response) {
-    int searchWindowUsed = response.requestUsed().searchParams().searchWindowInSeconds();
-    if (searchWindowUsed <= 0 && response.paths().isEmpty()) {
+    if (response.noConnectionFound()) {
       throw new RoutingValidationException(
         List.of(new RoutingError(RoutingErrorCode.NO_TRANSIT_CONNECTION, null))
       );

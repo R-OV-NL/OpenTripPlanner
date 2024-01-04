@@ -58,10 +58,17 @@ public class DefaultRoutingService implements RoutingService {
   }
 
   private void logResponse(RoutingResponse response) {
+    if (response.getTripPlan().itineraries.isEmpty() && response.getRoutingErrors().isEmpty()) {
+      // We should provide an error if there is no results, this is important for the client so
+      // it knows if it can page or abort.
+      LOG.warn("The routing result is empty, but there is no errors...");
+    }
+
     if (LOG.isDebugEnabled()) {
+      var m = response.getMetadata();
       var text = MultiLineToStringBuilder
         .of("Response")
-        .addDuration("SearchWindowUsed", response.getMetadata().searchWindowUsed)
+        .addDuration("SearchWindowUsed", m == null ? null : m.searchWindowUsed)
         .add("NextPage", response.getNextPageCursor())
         .add("PreviousPage", response.getPreviousPageCursor())
         .addColNl(
