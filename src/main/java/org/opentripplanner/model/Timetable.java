@@ -117,10 +117,13 @@ public class Timetable implements Serializable {
   @Nullable
   public TripTimes getTripTimes(Trip trip) {
     for (TripTimes tt : tripTimes) {
-      if (tt.getTrip() == trip) {
+      if (tt.getTrip() == trip || Objects.equals(tt.getTrip().getRealtimeTripId(), trip.getRealtimeTripId())) {
         return tt;
       }
     }
+
+    LOG.warn("Trip {} not found in timetable", trip.getRealtimeTripId());
+
     return null;
   }
 
@@ -334,7 +337,7 @@ public class Timetable implements Serializable {
         newTimes.updateDepartureDelay(i, delay);
       }
 
-      if(update != null) {
+      if (update != null) {
         // Set Dutch specific fields
         String plannedPlatform = update
           .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
@@ -344,13 +347,10 @@ public class Timetable implements Serializable {
           .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
           .getActualTrack();
 
-        if(!plannedPlatform.isEmpty())
-          newTimes.setScheduledPlatform(i, plannedPlatform);
+        if (!plannedPlatform.isEmpty()) newTimes.setScheduledPlatform(i, plannedPlatform);
 
-        if(!actualPlatform.isEmpty())
-          newTimes.setRealtimePlatform(i, actualPlatform);
+        if (!actualPlatform.isEmpty()) newTimes.setRealtimePlatform(i, actualPlatform);
       }
-
     }
     if (update != null) {
       LOG.debug(

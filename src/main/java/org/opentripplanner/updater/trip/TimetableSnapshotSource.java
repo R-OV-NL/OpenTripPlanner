@@ -58,9 +58,9 @@ import org.opentripplanner.transit.model.site.StopLocation;
 import org.opentripplanner.transit.model.timetable.RealTimeState;
 import org.opentripplanner.transit.model.timetable.RealTimeTripTimes;
 import org.opentripplanner.transit.model.timetable.Trip;
-import org.opentripplanner.transit.model.timetable.TripTimesFactory;
 import org.opentripplanner.transit.model.timetable.TripBuilder;
 import org.opentripplanner.transit.model.timetable.TripTimes;
+import org.opentripplanner.transit.model.timetable.TripTimesFactory;
 import org.opentripplanner.transit.service.DefaultTransitService;
 import org.opentripplanner.transit.service.TransitEditorService;
 import org.opentripplanner.transit.service.TransitModel;
@@ -282,9 +282,10 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         }
 
         boolean couldTripHaveStartedYesterday = false;
-        if(tripDescriptor.hasStartTime()) {
+        if (tripDescriptor.hasStartTime()) {
           try {
-            couldTripHaveStartedYesterday = ServiceDateUtils.serviceStartTimeIsBefore4Am(tripDescriptor.getStartTime());
+            couldTripHaveStartedYesterday =
+              ServiceDateUtils.serviceStartTimeIsBefore4Am(tripDescriptor.getStartTime());
           } catch (final ParseException e) {
             debug(
               tripId,
@@ -456,7 +457,10 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       .getCalendarService()
       .getServiceDatesForServiceId(serviceId);
 
-    if (!serviceDates.contains(serviceDate) && !(couldTripHaveStartedYesterday && serviceDates.contains(serviceDateYesterday))) {
+    if (
+      !serviceDates.contains(serviceDate) &&
+      !(couldTripHaveStartedYesterday && serviceDates.contains(serviceDateYesterday))
+    ) {
       debug(
         tripId,
         "SCHEDULED trip has service date {} for which trip's service is not valid, skipping.",
@@ -493,7 +497,6 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
 
     // Make sure that updated trip times have the correct real time state
     updatedTripTimes.setRealTimeState(RealTimeState.UPDATED);
-
 
     // If there are skipped stops, we need to change the pattern from the scheduled one
     if (skippedStopIndices.size() > 0) {
@@ -696,7 +699,6 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         } else {
           debug(tripId, "Trip update misses departure time, skipping.");
           return null;
-
           //Add arrival time as departure time?
         }
       }
@@ -1133,7 +1135,10 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         .getCalendarService()
         .getServiceIdsOnDate(serviceDateYesterday);
 
-      if (!serviceIds.contains(trip.getServiceId()) && !(couldTripHaveStartedYesterday && serviceIdsYesterday.contains(trip.getServiceId()))) {
+      if (
+        !serviceIds.contains(trip.getServiceId()) &&
+        !(couldTripHaveStartedYesterday && serviceIdsYesterday.contains(trip.getServiceId()))
+      ) {
         // TODO: should we support this and change service id of trip?
         debug(tripId, "REPLACEMENT trip has a service date that is not served by trip, skipping.");
         return UpdateError.result(tripId, NO_SERVICE_ON_DATE);

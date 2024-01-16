@@ -67,7 +67,7 @@ public interface TripTimes extends Serializable, Comparable<TripTimes> {
    * @return the real-time platform (code) of this stop.
    */
   String getRealtimePlatform(int stop);
-  
+
   /**
    * Whether stopIndex is considered a GTFS timepoint.
    */

@@ -1,5 +1,6 @@
 package org.opentripplanner.model;
 
+import com.esotericsoftware.kryo.util.Null;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ public class TripTimeOnDate {
   public static List<TripTimeOnDate> fromTripTimes(Timetable table, Trip trip) {
     TripTimes times = table.getTripTimes(trip);
     List<TripTimeOnDate> out = new ArrayList<>();
+
     for (int i = 0; i < times.getNumStops(); ++i) {
       out.add(new TripTimeOnDate(times, i, table.getPattern()));
     }

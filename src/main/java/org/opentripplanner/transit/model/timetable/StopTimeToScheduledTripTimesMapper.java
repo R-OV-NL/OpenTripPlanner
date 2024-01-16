@@ -50,7 +50,11 @@ class StopTimeToScheduledTripTimesMapper {
       arrivals[s] = st.getArrivalTime();
       sequences[s] = st.getStopSequence();
       timepoints.set(s, st.getTimepoint() == 1);
-      platforms[s] = st.getStop().getPlatformCode();
+
+      if (st.getStop() != null) {
+        platforms[s] = st.getStop().getPlatformCode();
+      }
+
       dropOffBookingInfos.add(st.getDropOffBookingInfo());
       pickupBookingInfos.add(st.getPickupBookingInfo());
       s++;

@@ -89,7 +89,8 @@ public class ServiceDateUtils {
    * @return true if the given time is before 4 AM
    * @throws ParseException if the given time is not in the format "HH:mm:ss"
    */
-  public static boolean serviceStartTimeIsBefore4Am(String startOfServiceTime) throws ParseException {
+  public static boolean serviceStartTimeIsBefore4Am(String startOfServiceTime)
+    throws ParseException {
     //Check if the given time is in the format "HH:mm:ss"
     if (!startOfServiceTime.matches("^\\d{2}:\\d{2}:\\d{2}$")) {
       throw new ParseException("error parsing time: " + startOfServiceTime, 0);
