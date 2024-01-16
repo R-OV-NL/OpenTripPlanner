@@ -53,7 +53,7 @@ public final class RealTimeTripTimes implements TripTimes {
       original.headsigns,
       original.occupancyStatus,
       original.wheelchairAccessibility,
-      scheduledTripTimes.copyOfNoDuplication().platforms()
+      original.platforms
     );
   }
 
@@ -180,9 +180,6 @@ public final class RealTimeTripTimes implements TripTimes {
 
   public void setRealtimePlatform(int stop, String platform) {
     prepareForRealTimeUpdates();
-    if(!platforms[stop].equals(platform))
-      System.out.println("Platform changed from " + platforms[stop] + " to " + platform);
-
     platforms[stop] = platform;
   }
 

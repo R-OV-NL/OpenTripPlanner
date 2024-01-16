@@ -977,6 +977,8 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
 
       newTripTimes.updateArrivalDelay(stopIndex, newTripTimes.getArrivalDelay(stopIndex));
       newTripTimes.updateDepartureDelay(stopIndex, newTripTimes.getDepartureDelay(stopIndex));
+      newTripTimes.setRealtimePlatform(stopIndex, newTripTimes.getRealtimePlatform(stopIndex));
+      newTripTimes.setScheduledPlatform(stopIndex, newTripTimes.getScheduledPlatform(stopIndex));
     }
 
     // Set service code of new trip times

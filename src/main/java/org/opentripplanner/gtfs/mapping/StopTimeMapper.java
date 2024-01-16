@@ -64,11 +64,11 @@ class StopTimeMapper {
       "Trip %s contains stop_time with no stop, location or group.".formatted(rhs.getTrip())
     );
     switch (stopLocation) {
-      case Stop stop -> lhs.setStop(stopMapper.map(stop));
-      //      lhs.setStop(stopMapper.map((Stop) rhs.getStop()));
-      //
-      //      Stop stop = (Stop) rhs.getStop();
-      //      lhs.setScheduledPlatform(stop.getPlatformCode());
+      case Stop stop -> {
+        lhs.setStop(stopMapper.map(stop));
+        Stop rhsStop = (Stop) rhs.getStop();
+        lhs.setScheduledPlatform(rhsStop.getPlatformCode());
+      }
       case Location location -> lhs.setStop(locationMapper.map(location));
       case LocationGroup locGroup -> lhs.setStop(locationGroupMapper.map(locGroup));
       default -> throw new IllegalArgumentException(
