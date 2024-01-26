@@ -124,7 +124,7 @@ public class TripRequestMapperTest implements PlanTestConstants {
           graph,
           transitService,
           Metrics.globalRegistry,
-          RouterConfig.DEFAULT.vectorTileLayers(),
+          RouterConfig.DEFAULT.vectorTileConfig(),
           new DefaultWorldEnvelopeService(new DefaultWorldEnvelopeRepository()),
           new DefaultRealtimeVehicleService(transitService),
           new DefaultVehicleRentalService(),
@@ -272,7 +272,7 @@ public class TripRequestMapperTest implements PlanTestConstants {
   @Test
   void testDefaultTriangleFactors() {
     var req2 = TripRequestMapper.createRequest(executionContext(Map.of()));
-    assertEquals(BicycleOptimizeType.SAFE, req2.preferences().bike().optimizeType());
+    assertEquals(BicycleOptimizeType.SAFE_STREETS, req2.preferences().bike().optimizeType());
     assertEquals(TimeSlopeSafetyTriangle.DEFAULT, req2.preferences().bike().optimizeTriangle());
   }
 
