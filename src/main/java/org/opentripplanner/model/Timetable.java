@@ -117,7 +117,14 @@ public class Timetable implements Serializable {
   @Nullable
   public TripTimes getTripTimes(Trip trip) {
     for (TripTimes tt : tripTimes) {
-      if (tt.getTrip() == trip || Objects.equals(tt.getTrip().getRealtimeTripId(), trip.getRealtimeTripId())) {
+      if (
+        tt.getTrip() == trip ||
+        (
+          tt.getTrip().getRealtimeTripId() != null &&
+          trip.getRealtimeTripId() != null &&
+          trip.getRealtimeTripId().equals(tt.getTrip().getRealtimeTripId())
+        )
+      ) {
         return tt;
       }
     }
