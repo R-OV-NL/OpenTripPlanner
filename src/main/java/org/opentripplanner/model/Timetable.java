@@ -117,20 +117,24 @@ public class Timetable implements Serializable {
   @Nullable
   public TripTimes getTripTimes(Trip trip) {
     for (TripTimes tt : tripTimes) {
+      if (tt.getTrip() == trip) {
+        return tt;
+      }
+
       if (
-        tt.getTrip() == trip ||
-        (
-          tt.getTrip().getRealtimeTripId() != null &&
+        tt.getTrip().getRealtimeTripId() != null &&
           trip.getRealtimeTripId() != null &&
           trip.getRealtimeTripId().equals(tt.getTrip().getRealtimeTripId())
-        )
       ) {
+        return tt;
+      }
+
+      if (tt.getTrip().getId().equals(trip.getId())) {
         return tt;
       }
     }
 
-    LOG.warn("Trip {} not found in timetable", trip.getRealtimeTripId());
-
+    LOG.warn("Trip {} {} not found in timetable", trip.getId(), trip.getRealtimeTripId());
     return null;
   }
 
@@ -373,16 +377,16 @@ public class Timetable implements Serializable {
       if (
         (
           backwardsDelayPropagationType == BackwardsDelayPropagationType.REQUIRED_NO_DATA &&
-          newTimes.adjustTimesBeforeWhenRequired(firstUpdatedIndex, true)
+            newTimes.adjustTimesBeforeWhenRequired(firstUpdatedIndex, true)
         ) ||
-        (
-          backwardsDelayPropagationType == BackwardsDelayPropagationType.REQUIRED &&
-          newTimes.adjustTimesBeforeWhenRequired(firstUpdatedIndex, false)
-        ) ||
-        (
-          backwardsDelayPropagationType == BackwardsDelayPropagationType.ALWAYS &&
-          newTimes.adjustTimesBeforeAlways(firstUpdatedIndex)
-        )
+          (
+            backwardsDelayPropagationType == BackwardsDelayPropagationType.REQUIRED &&
+              newTimes.adjustTimesBeforeWhenRequired(firstUpdatedIndex, false)
+          ) ||
+          (
+            backwardsDelayPropagationType == BackwardsDelayPropagationType.ALWAYS &&
+              newTimes.adjustTimesBeforeAlways(firstUpdatedIndex)
+          )
       ) {
         LOG.debug(
           "Propagated delay from stop index {} backwards on trip {}.",
@@ -433,8 +437,7 @@ public class Timetable implements Serializable {
   }
 
   /**
-   * Apply the same update to all trip-times inculuding scheduled and frequency based
-   * trip times.
+   * Apply the same update to all trip-times inculuding scheduled and frequency based trip times.
    * <p>
    * THIS IS NOT THREAD-SAFE - ONLY USE THIS METHOD DURING GRAPH-BUILD!
    */
