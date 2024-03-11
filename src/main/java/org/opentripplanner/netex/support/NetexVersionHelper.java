@@ -26,7 +26,22 @@ public class NetexVersionHelper {
    * increasing integer. A bigger value indicate a later version.
    */
   public static int versionOf(EntityInVersionStructure e) {
-    return Integer.parseInt(e.getVersion());
+    try {
+      return Integer.parseInt(e.getVersion());
+    } catch (NumberFormatException ex) {
+
+      //Get any sequence of numbers from the string
+      String version = e.getVersion().replaceAll("\\D+","");
+
+      if(version.isEmpty()) {
+        return 0;
+      } else if(version.length() > 8) {
+        return Integer.parseInt(version.substring(0, 8));
+      } else {
+        return Integer.parseInt(version);
+      }
+    }
+
   }
 
   /**

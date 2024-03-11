@@ -85,7 +85,7 @@ public class NetexMapper {
    */
   private NetexMapperIndexes currentMapperIndexes = null;
 
-  private int level = LEVEL_SHARED;
+  private int level = LEVEL_GROUP;
 
   public NetexMapper(
     OtpTransitServiceBuilder transitBuilder,
@@ -488,6 +488,11 @@ public class NetexMapper {
 
     transitBuilder.getTripPatterns().put(stopPattern, result.tripPattern());
     currentMapperIndexes.addStopTimesByNetexId(result.stopTimeByNetexId());
+
+    if(groupMapper == null) {
+      this.setupGroupMapping();
+    }
+
     groupMapper.scheduledStopPointsIndex.putAll(Multimaps.asMap(result.scheduledStopPointsIndex()));
     transitBuilder.getTripOnServiceDates().addAll(result.tripOnServiceDates());
   }
