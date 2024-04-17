@@ -123,8 +123,8 @@ public class Timetable implements Serializable {
 
       if (
         tt.getTrip().getRealtimeTripId() != null &&
-          trip.getRealtimeTripId() != null &&
-          trip.getRealtimeTripId().equals(tt.getTrip().getRealtimeTripId())
+        trip.getRealtimeTripId() != null &&
+        trip.getRealtimeTripId().equals(tt.getTrip().getRealtimeTripId())
       ) {
         return tt;
       }
@@ -377,16 +377,16 @@ public class Timetable implements Serializable {
       if (
         (
           backwardsDelayPropagationType == BackwardsDelayPropagationType.REQUIRED_NO_DATA &&
-            newTimes.adjustTimesBeforeWhenRequired(firstUpdatedIndex, true)
+          newTimes.adjustTimesBeforeWhenRequired(firstUpdatedIndex, true)
         ) ||
-          (
-            backwardsDelayPropagationType == BackwardsDelayPropagationType.REQUIRED &&
-              newTimes.adjustTimesBeforeWhenRequired(firstUpdatedIndex, false)
-          ) ||
-          (
-            backwardsDelayPropagationType == BackwardsDelayPropagationType.ALWAYS &&
-              newTimes.adjustTimesBeforeAlways(firstUpdatedIndex)
-          )
+        (
+          backwardsDelayPropagationType == BackwardsDelayPropagationType.REQUIRED &&
+          newTimes.adjustTimesBeforeWhenRequired(firstUpdatedIndex, false)
+        ) ||
+        (
+          backwardsDelayPropagationType == BackwardsDelayPropagationType.ALWAYS &&
+          newTimes.adjustTimesBeforeAlways(firstUpdatedIndex)
+        )
       ) {
         LOG.debug(
           "Propagated delay from stop index {} backwards on trip {}.",

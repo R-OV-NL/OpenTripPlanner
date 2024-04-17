@@ -86,6 +86,7 @@ public class ScheduledTransitLeg implements TransitLeg {
     this.generalizedCost = builder.generalizedCost();
 
     this.accessibilityScore = builder.accessibilityScore();
+
     List<Coordinate> transitLegCoordinates = extractTransitLegCoordinates(
       tripPattern,
       builder.boardStopIndexInPattern(),

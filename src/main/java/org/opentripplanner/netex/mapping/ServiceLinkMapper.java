@@ -75,7 +75,7 @@ class ServiceLinkMapper {
     JourneyPattern_VersionStructure journeyPattern,
     StopPattern stopPattern
   ) {
-    if(stopPattern.getSize() == 0) {
+    if (stopPattern.getSize() == 0) {
       return new LineString[0];
     }
 

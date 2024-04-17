@@ -56,6 +56,7 @@ public class TripPatternCache {
         .withMode(trip.getMode())
         .withNetexSubmode(trip.getNetexSubMode())
         .withStopPattern(stopPattern);
+//        .withHopGeometries(GtfsModule.geometryProcessors.get(trip.getId().getFeedId()).createHopGeometries(trip));
 
       tripPatternBuilder.withCreatedByRealtimeUpdater(true);
       tripPatternBuilder.withOriginalTripPattern(originalTripPattern);

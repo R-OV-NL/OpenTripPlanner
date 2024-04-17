@@ -29,19 +29,17 @@ public class NetexVersionHelper {
     try {
       return Integer.parseInt(e.getVersion());
     } catch (NumberFormatException ex) {
-
       //Get any sequence of numbers from the string
-      String version = e.getVersion().replaceAll("\\D+","");
+      String version = e.getVersion().replaceAll("\\D+", "");
 
-      if(version.isEmpty()) {
+      if (version.isEmpty()) {
         return 0;
-      } else if(version.length() > 8) {
+      } else if (version.length() > 8) {
         return Integer.parseInt(version.substring(0, 8));
       } else {
         return Integer.parseInt(version);
       }
     }
-
   }
 
   /**

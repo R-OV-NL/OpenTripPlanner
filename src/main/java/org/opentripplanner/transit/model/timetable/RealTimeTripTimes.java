@@ -332,6 +332,7 @@ public final class RealTimeTripTimes implements TripTimes {
   public void updateArrivalDelay(final int stop, final int delay) {
     prepareForRealTimeUpdates();
     arrivalTimes[stop] = scheduledTripTimes.getScheduledArrivalTime(stop) + delay;
+
   }
 
   @Nullable

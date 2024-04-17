@@ -742,6 +742,14 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     var tripBuilder = Trip.of(tripId);
     tripBuilder.withRoute(route);
 
+    if(tripUpdate.hasTripProperties()) {
+      var properties = tripUpdate.getTripProperties();
+
+      if(properties.hasShapeId()) {
+        tripBuilder.withShapeId(new FeedScopedId(tripId.getFeedId(), properties.getShapeId()));
+      }
+    }
+
     // Get extension fields
 
     var extension = tripUpdate.getTrip().getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
@@ -919,7 +927,10 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
           );
           return UpdateError.result(trip.getId(), INVALID_ARRIVAL_TIME);
         }
-        stopTime.setArrivalTime((int) arrivalTime);
+
+        final int arrivalDelay = stopTimeUpdate.getArrival().getDelay();
+
+        stopTime.setArrivalTime((int) arrivalTime - arrivalDelay);
       }
       // Set departure time
       if (stopTimeUpdate.hasDeparture() && stopTimeUpdate.getDeparture().hasTime()) {
@@ -933,7 +944,10 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
           );
           return UpdateError.result(trip.getId(), INVALID_DEPARTURE_TIME);
         }
-        stopTime.setDepartureTime((int) departureTime);
+
+        final int departureDelay = stopTimeUpdate.getDeparture().getDelay();
+
+        stopTime.setDepartureTime((int) departureTime - departureDelay);
       }
       stopTime.setTimepoint(1); // Exact time
       if (stopTimeUpdate.hasStopSequence()) {
@@ -946,6 +960,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       // Add stop time to list
       stopTimes.add(stopTime);
     }
+
 
     // TODO: filter/interpolate stop times like in PatternHopFactory?
 
@@ -968,16 +983,13 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     );
 
     // Update all times to mark trip times as realtime
-    // TODO: should we incorporate the delay field if present?
     for (int stopIndex = 0; stopIndex < newTripTimes.getNumStops(); stopIndex++) {
-      newTripTimes.updateArrivalTime(stopIndex, newTripTimes.getScheduledArrivalTime(stopIndex));
-      newTripTimes.updateDepartureTime(
-        stopIndex,
-        newTripTimes.getScheduledDepartureTime(stopIndex)
-      );
+      int arrivalDelay = stopTimeUpdates.get(stopIndex).getArrival().getDelay();
+      int departureDelay = stopTimeUpdates.get(stopIndex).getDeparture().getDelay();
 
-      newTripTimes.updateArrivalDelay(stopIndex, newTripTimes.getArrivalDelay(stopIndex));
-      newTripTimes.updateDepartureDelay(stopIndex, newTripTimes.getDepartureDelay(stopIndex));
+      newTripTimes.updateArrivalDelay(stopIndex, arrivalDelay);
+      newTripTimes.updateDepartureDelay(stopIndex, departureDelay);
+
       newTripTimes.setRealtimePlatform(stopIndex, newTripTimes.getRealtimePlatform(stopIndex));
       newTripTimes.setScheduledPlatform(stopIndex, newTripTimes.getScheduledPlatform(stopIndex));
     }
