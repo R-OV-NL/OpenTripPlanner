@@ -2,6 +2,7 @@
 package org.opentripplanner.apis.gtfs.generated;
 
 import graphql.relay.Connection;
+import graphql.relay.DefaultEdge;
 import graphql.relay.Edge;
 import graphql.schema.DataFetcher;
 import graphql.schema.TypeResolver;
@@ -20,6 +21,8 @@ import org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLOccupancyStat
 import org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLRelativeDirection;
 import org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLRoutingErrorCode;
 import org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLTransitMode;
+import org.opentripplanner.apis.gtfs.model.FeedPublisher;
+import org.opentripplanner.apis.gtfs.model.PlanPageInfo;
 import org.opentripplanner.apis.gtfs.model.RideHailingProvider;
 import org.opentripplanner.apis.gtfs.model.StopPosition;
 import org.opentripplanner.apis.gtfs.model.TripOccupancy;
@@ -61,6 +64,8 @@ import org.opentripplanner.transit.model.network.Route;
 import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.organization.Agency;
 import org.opentripplanner.transit.model.timetable.Trip;
+import org.opentripplanner.transit.model.timetable.booking.BookingInfo;
+import org.opentripplanner.transit.model.timetable.booking.BookingTime;
 
 public class GraphQLDataFetchers {
 
@@ -210,9 +215,9 @@ public class GraphQLDataFetchers {
 
     public DataFetcher<String> dropOffMessage();
 
-    public DataFetcher<org.opentripplanner.model.BookingTime> earliestBookingTime();
+    public DataFetcher<BookingTime> earliestBookingTime();
 
-    public DataFetcher<org.opentripplanner.model.BookingTime> latestBookingTime();
+    public DataFetcher<BookingTime> latestBookingTime();
 
     public DataFetcher<Long> maximumBookingNoticeSeconds();
 
@@ -283,6 +288,16 @@ public class GraphQLDataFetchers {
     public DataFetcher<String> infoUrl();
 
     public DataFetcher<String> phoneNumber();
+  }
+
+  /**
+   * Coordinate (often referred as coordinates), which is used to specify a location using in the
+   * WGS84 coordinate system.
+   */
+  public interface GraphQLCoordinate {
+    public DataFetcher<Double> latitude();
+
+    public DataFetcher<Double> longitude();
   }
 
   public interface GraphQLCoordinates {
@@ -380,6 +395,15 @@ public class GraphQLDataFetchers {
     public DataFetcher<Iterable<TransitAlert>> alerts();
 
     public DataFetcher<String> feedId();
+
+    public DataFetcher<FeedPublisher> publisher();
+  }
+
+  /** Feed publisher information */
+  public interface GraphQLFeedPublisher {
+    public DataFetcher<String> name();
+
+    public DataFetcher<String> url();
   }
 
   public interface GraphQLGeometry {
@@ -439,7 +463,7 @@ public class GraphQLDataFetchers {
 
     public DataFetcher<Double> distance();
 
-    public DataFetcher<org.opentripplanner.model.BookingInfo> dropOffBookingInfo();
+    public DataFetcher<BookingInfo> dropOffBookingInfo();
 
     public DataFetcher<String> dropoffType();
 
@@ -471,7 +495,7 @@ public class GraphQLDataFetchers {
 
     public DataFetcher<Iterable<Leg>> nextLegs();
 
-    public DataFetcher<org.opentripplanner.model.BookingInfo> pickupBookingInfo();
+    public DataFetcher<BookingInfo> pickupBookingInfo();
 
     public DataFetcher<String> pickupType();
 
@@ -671,6 +695,46 @@ public class GraphQLDataFetchers {
     public DataFetcher<StopArrival> to();
   }
 
+  /**
+   * Plan (result of an itinerary search) that follows
+   * [GraphQL Cursor Connections Specification](https://relay.dev/graphql/connections.htm).
+   */
+  public interface GraphQLPlanConnection {
+    public DataFetcher<Iterable<DefaultEdge<Itinerary>>> edges();
+
+    public DataFetcher<PlanPageInfo> pageInfo();
+
+    public DataFetcher<Iterable<RoutingError>> routingErrors();
+
+    public DataFetcher<java.time.OffsetDateTime> searchDateTime();
+  }
+
+  /**
+   * Edge outputted by a plan search. Part of the
+   * [GraphQL Cursor Connections Specification](https://relay.dev/graphql/connections.htm).
+   */
+  public interface GraphQLPlanEdge {
+    public DataFetcher<String> cursor();
+
+    public DataFetcher<Itinerary> node();
+  }
+
+  /**
+   * Information about pagination in a connection. Part of the
+   * [GraphQL Cursor Connections Specification](https://relay.dev/graphql/connections.htm).
+   */
+  public interface GraphQLPlanPageInfo {
+    public DataFetcher<String> endCursor();
+
+    public DataFetcher<Boolean> hasNextPage();
+
+    public DataFetcher<Boolean> hasPreviousPage();
+
+    public DataFetcher<java.time.Duration> searchWindowUsed();
+
+    public DataFetcher<String> startCursor();
+  }
+
   /** Stop position at a specific stop. */
   public interface GraphQLPositionAtStop {
     public DataFetcher<Integer> position();
@@ -723,6 +787,8 @@ public class GraphQLDataFetchers {
     public DataFetcher<Iterable<TripPattern>> patterns();
 
     public DataFetcher<graphql.execution.DataFetcherResult<org.opentripplanner.routing.api.response.RoutingResponse>> plan();
+
+    public DataFetcher<graphql.execution.DataFetcherResult<org.opentripplanner.routing.api.response.RoutingResponse>> planConnection();
 
     public DataFetcher<VehicleRentalVehicle> rentalVehicle();
 
@@ -1179,7 +1245,7 @@ public class GraphQLDataFetchers {
     public DataFetcher<Integer> wheelchairAccessibleCarSpaces();
   }
 
-  /** Realtime vehicle position */
+  /** Real-time vehicle position */
   public interface GraphQLVehiclePosition {
     public DataFetcher<Double> heading();
 

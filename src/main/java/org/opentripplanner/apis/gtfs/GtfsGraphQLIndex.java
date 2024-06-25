@@ -51,6 +51,7 @@ import org.opentripplanner.apis.gtfs.datafetchers.OpeningHoursImpl;
 import org.opentripplanner.apis.gtfs.datafetchers.PatternImpl;
 import org.opentripplanner.apis.gtfs.datafetchers.PlaceImpl;
 import org.opentripplanner.apis.gtfs.datafetchers.PlaceInterfaceTypeResolver;
+import org.opentripplanner.apis.gtfs.datafetchers.PlanConnectionImpl;
 import org.opentripplanner.apis.gtfs.datafetchers.PlanImpl;
 import org.opentripplanner.apis.gtfs.datafetchers.QueryTypeImpl;
 import org.opentripplanner.apis.gtfs.datafetchers.RentalVehicleImpl;
@@ -112,7 +113,18 @@ class GtfsGraphQLIndex {
         .scalar(GraphQLScalars.GRAPHQL_ID_SCALAR)
         .scalar(GraphQLScalars.GRAMS_SCALAR)
         .scalar(GraphQLScalars.OFFSET_DATETIME_SCALAR)
+        .scalar(GraphQLScalars.RATIO_SCALAR)
+        .scalar(GraphQLScalars.COORDINATE_VALUE_SCALAR)
+        .scalar(GraphQLScalars.COST_SCALAR)
+        .scalar(GraphQLScalars.RELUCTANCE_SCALAR)
         .scalar(ExtendedScalars.GraphQLLong)
+        .scalar(ExtendedScalars.Locale)
+        .scalar(
+          ExtendedScalars
+            .newAliasedScalar("Speed")
+            .aliasedScalar(ExtendedScalars.NonNegativeFloat)
+            .build()
+        )
         .type("Node", type -> type.typeResolver(new NodeTypeResolver()))
         .type("PlaceInterface", type -> type.typeResolver(new PlaceInterfaceTypeResolver()))
         .type("StopPosition", type -> type.typeResolver(new StopPosition() {}))
@@ -129,13 +141,13 @@ class GtfsGraphQLIndex {
         .type(typeWiring.build(DepartureRowImpl.class))
         .type(typeWiring.build(elevationProfileComponentImpl.class))
         .type(typeWiring.build(FeedImpl.class))
-        .type(typeWiring.build(FeedImpl.class))
         .type(typeWiring.build(GeometryImpl.class))
         .type(typeWiring.build(ItineraryImpl.class))
         .type(typeWiring.build(LegImpl.class))
         .type(typeWiring.build(PatternImpl.class))
         .type(typeWiring.build(PlaceImpl.class))
         .type(typeWiring.build(placeAtDistanceImpl.class))
+        .type(typeWiring.build(PlanConnectionImpl.class))
         .type(typeWiring.build(PlanImpl.class))
         .type(typeWiring.build(QueryTypeImpl.class))
         .type(typeWiring.build(RouteImpl.class))

@@ -206,7 +206,7 @@ The boardSlack is the minimum extra time to board a public transport vehicle.
 The board time is added to the time when going from the stop (offboard) to onboard a transit
 vehicle.
 
-This is the same as the `transferSlack`, except that this also apply to to the first
+This is the same as the `transferSlack`, except that this also applies to to the first
 transit leg in the trip. This is the default value used, if not overridden by the `boardSlackList`.
 
 
@@ -947,7 +947,7 @@ The wait time is used to prevent *back-travel*, the `backTravelWaitTimeFactor` i
 
 Add an extra board- and alight-cost for prioritized stops.
 
-A stopBoardAlightCosts is added to the generalized-cost during routing. But this cost
+A stopBoardAlightTransferCosts is added to the generalized-cost during routing. But this cost
 cannot be too high, because that would add extra cost to the transfer, and favor other
 alternative paths. But, when optimizing transfers, we do not have to take other paths
 into consideration and can *boost* the stop-priority-cost to allow transfers to

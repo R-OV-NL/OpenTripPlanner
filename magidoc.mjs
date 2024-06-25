@@ -29,14 +29,22 @@ at http://localhost:8080/graphiql
 This API is activated by default.
 
 To learn how to deactivate it, read the
-[documentation](https://docs.opentripplanner.org/en/dev-2.x/apis/GTFS-GraphQ-API/).
+[documentation](https://docs.opentripplanner.org/en/dev-2.x/apis/GTFS-GraphQL-API/).
 `,
       }],
       appTitle: 'OTP GTFS GraphQL API',
       queryGenerationFactories: {
         'Polyline': '<>',
         'GeoJson': '<>',
-        'OffsetDateTime': '2024-02-05T18:04:23+01:00'
+        'OffsetDateTime': '2024-02-05T18:04:23+01:00',
+        'Duration': 'PT10M',
+        'CoordinateValue': 19.24,
+        'Reluctance': 3.1,
+        'Speed': 3.4,
+        'Cost': 100,
+        'Ratio': 0.25,
+        'Locale': 'en'
+
       },
     }
   },
