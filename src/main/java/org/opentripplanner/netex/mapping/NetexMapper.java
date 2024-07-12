@@ -488,6 +488,11 @@ public class NetexMapper {
 
     transitBuilder.getTripPatterns().put(stopPattern, result.tripPattern());
     currentMapperIndexes.addStopTimesByNetexId(result.stopTimeByNetexId());
+
+    if (groupMapper == null) {
+      this.setupGroupMapping();
+    }
+
     groupMapper.scheduledStopPointsIndex.putAll(Multimaps.asMap(result.scheduledStopPointsIndex()));
     transitBuilder.getTripOnServiceDates().addAll(result.tripOnServiceDates());
   }

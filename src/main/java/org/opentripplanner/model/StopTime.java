@@ -13,7 +13,7 @@ import org.opentripplanner.transit.model.timetable.booking.BookingInfo;
  * This class is TEMPORALLY used during mapping of GTFS and Netex into the internal Model, it is not
  * kept as part of the Graph.
  * <p/>
- * TODO OTP2 - Refactor the mapping so it do not create these objecs, but map directly into the target
+ * TODO OTP2 - Refactor the mapping so it do not create these objects, but map directly into the target
  *           - object structure.
  */
 public final class StopTime implements Comparable<StopTime> {
@@ -41,6 +41,9 @@ public final class StopTime implements Comparable<StopTime> {
   private PickDrop pickupType = PickDrop.SCHEDULED;
 
   private PickDrop dropOffType = PickDrop.SCHEDULED;
+
+  private String scheduledPlatform;
+  private String realtimePlatform;
 
   private double shapeDistTraveled = MISSING_VALUE;
 
@@ -82,6 +85,22 @@ public final class StopTime implements Comparable<StopTime> {
 
   public void setTrip(Trip trip) {
     this.trip = trip;
+  }
+
+  public String getScheduledPlatform() {
+    return scheduledPlatform;
+  }
+
+  public void setScheduledPlatform(String scheduledPlatform) {
+    this.scheduledPlatform = scheduledPlatform;
+  }
+
+  public String getRealtimePlatform() {
+    return realtimePlatform;
+  }
+
+  public void setRealtimePlatform(String realtimePlatform) {
+    this.realtimePlatform = realtimePlatform;
   }
 
   public int getStopSequence() {

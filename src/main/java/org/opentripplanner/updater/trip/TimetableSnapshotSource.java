@@ -21,10 +21,12 @@ import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.TripDescriptor;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
+import com.google.transit.realtime.GtfsRealtimeOVapi;
 import de.mfdz.MfdzRealtimeExtensions;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +57,8 @@ import org.opentripplanner.transit.model.site.StopLocation;
 import org.opentripplanner.transit.model.timetable.RealTimeState;
 import org.opentripplanner.transit.model.timetable.RealTimeTripTimes;
 import org.opentripplanner.transit.model.timetable.Trip;
+import org.opentripplanner.transit.model.timetable.TripBuilder;
+import org.opentripplanner.transit.model.timetable.TripTimes;
 import org.opentripplanner.transit.model.timetable.TripTimesFactory;
 import org.opentripplanner.transit.service.DefaultTransitService;
 import org.opentripplanner.transit.service.TransitEditorService;
@@ -182,9 +186,12 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         FeedScopedId tripId = new FeedScopedId(feedId, tripUpdate.getTrip().getTripId());
 
         LocalDate serviceDate;
+        LocalDate serviceDateYesterday;
         if (tripDescriptor.hasStartDate()) {
           try {
             serviceDate = ServiceDateUtils.parseString(tripDescriptor.getStartDate());
+
+            serviceDateYesterday = serviceDate.minusDays(1);
           } catch (final ParseException e) {
             debug(
               tripId,
@@ -197,6 +204,23 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
           // TODO: figure out the correct service date. For the special case that a trip
           // starts for example at 40:00, yesterday would probably be a better guess.
           serviceDate = localDateNow.get();
+
+          serviceDateYesterday = serviceDate.minusDays(1);
+        }
+
+        boolean couldTripHaveStartedYesterday = false;
+        if (tripDescriptor.hasStartTime()) {
+          try {
+            couldTripHaveStartedYesterday =
+              ServiceDateUtils.serviceStartTimeIsBefore4Am(tripDescriptor.getStartTime());
+          } catch (final ParseException e) {
+            debug(
+              tripId,
+              "Failed to parse start time in gtfs-rt trip update: {}",
+              tripDescriptor.getStartTime()
+            );
+            continue;
+          }
         }
         // Determine what kind of trip update this is
         final TripDescriptor.ScheduleRelationship tripScheduleRelationship = determineTripScheduleRelationship(
@@ -218,6 +242,8 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
                 tripUpdate,
                 tripId,
                 serviceDate,
+                serviceDateYesterday,
+                couldTripHaveStartedYesterday,
                 backwardsDelayPropagationType
               );
               case ADDED -> validateAndHandleAddedTrip(
@@ -242,7 +268,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
                 tripUpdate,
                 tripDescriptor,
                 tripId,
-                serviceDate
+                serviceDate,
+                serviceDateYesterday,
+                couldTripHaveStartedYesterday
               );
               case UNSCHEDULED -> UpdateError.result(tripId, NOT_IMPLEMENTED_UNSCHEDULED);
               case DUPLICATED -> UpdateError.result(tripId, NOT_IMPLEMENTED_DUPLICATED);
@@ -268,10 +296,10 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     });
 
     var updateResult = UpdateResult.ofResults(results);
-
-    if (updateIncrementality == FULL_DATASET) {
+    
+    //if (updateIncrementality == FULL_DATASET) {
       logUpdateResult(feedId, failuresByRelationship, updateResult);
-    }
+    //}
     return updateResult;
   }
 
@@ -370,6 +398,8 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     TripUpdate tripUpdate,
     FeedScopedId tripId,
     LocalDate serviceDate,
+    LocalDate serviceDateYesterday,
+    boolean couldTripHaveStartedYesterday,
     BackwardsDelayPropagationType backwardsDelayPropagationType
   ) {
     final TripPattern pattern = getPatternForTripId(tripId);
@@ -388,7 +418,11 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     final Set<LocalDate> serviceDates = transitService
       .getCalendarService()
       .getServiceDatesForServiceId(serviceId);
-    if (!serviceDates.contains(serviceDate)) {
+
+    if (
+      !serviceDates.contains(serviceDate) &&
+      !(couldTripHaveStartedYesterday && serviceDates.contains(serviceDateYesterday))
+    ) {
       debug(
         tripId,
         "SCHEDULED trip has service date {} for which trip's service is not valid, skipping.",
@@ -544,7 +578,7 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     final List<StopLocation> stops = new ArrayList<>(stopTimeUpdates.size());
 
     for (int index = 0; index < stopTimeUpdates.size(); ++index) {
-      final StopTimeUpdate stopTimeUpdate = stopTimeUpdates.get(index);
+      StopTimeUpdate stopTimeUpdate = stopTimeUpdates.get(index);
 
       // Check stop sequence
       if (stopTimeUpdate.hasStopSequence()) {
@@ -588,34 +622,44 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
         return null;
       }
 
-      // Check arrival time
-      if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
-        // Check for increasing time
-        final Long time = stopTimeUpdate.getArrival().getTime();
-        if (previousTime != null && previousTime > time) {
-          debug(tripId, "Trip update contains decreasing times, skipping.");
-          return null;
-        }
-        previousTime = time;
-      } else {
-        debug(tripId, "Trip update misses arrival time, skipping.");
-        return null;
-      }
+      if (stopTimeUpdate.getScheduleRelationship() != StopTimeUpdate.ScheduleRelationship.SKIPPED) {
+        // Check arrival time
+        if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
+          // Check for increasing time
+          final Long time = stopTimeUpdate.getArrival().getTime();
+          if (previousTime != null && previousTime > time) {
+            debug(tripId, "Trip update contains decreasing times, skipping.");
+            return null;
+          }
+          previousTime = time;
+        } else {
+          debug(tripId, "Trip update misses arrival time, setting the arrival to the departure.");
+          //Copy the current departure time to the arrival time, make a new stoptime update using the builder.
 
-      // Check departure time
-      if (stopTimeUpdate.hasDeparture() && stopTimeUpdate.getDeparture().hasTime()) {
-        // Check for increasing time
-        final Long time = stopTimeUpdate.getDeparture().getTime();
-        if (previousTime != null && previousTime > time) {
-          debug(tripId, "Trip update contains decreasing times, skipping.");
-          return null;
+          StopTimeUpdate.Builder builder = stopTimeUpdate.toBuilder();
+          builder.getArrivalBuilder().setTime(stopTimeUpdate.getDeparture().getTime());
+          builder.getArrivalBuilder().setDelay(stopTimeUpdate.getDeparture().getDelay());
+
+          stopTimeUpdate = builder.build();
         }
-        previousTime = time;
-      } else {
-        debug(tripId, "Trip update misses departure time, skipping.");
-        return null;
+
+        // Check departure time
+        if (stopTimeUpdate.hasDeparture() && stopTimeUpdate.getDeparture().hasTime()) {
+          // Check for increasing time
+          final Long time = stopTimeUpdate.getDeparture().getTime();
+          if (previousTime != null && previousTime > time) {
+            debug(tripId, "Trip update contains decreasing times, skipping.");
+            return null;
+          }
+          previousTime = time;
+        } else {
+          debug(tripId, "Trip update misses departure time, skipping.");
+          return null;
+          //Add arrival time as departure time?
+        }
       }
     }
+
     return stops;
   }
 
@@ -650,6 +694,26 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     // TODO: which Agency ID to use? Currently use feed id.
     var tripBuilder = Trip.of(tripId);
     tripBuilder.withRoute(route);
+
+    if(tripUpdate.hasTripProperties()) {
+      var properties = tripUpdate.getTripProperties();
+
+      if(properties.hasShapeId()) {
+        tripBuilder.withShapeId(new FeedScopedId(tripId.getFeedId(), properties.getShapeId()));
+      }
+    }
+
+    // Get extension fields
+
+    var extension = tripUpdate.getTrip().getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
+
+    if (extension != null) {
+      String realtimeTripId = extension.getRealtimeTripId();
+      String tripShortName = extension.getTripShortName();
+
+      tripBuilder.withRealtimeTripId(realtimeTripId);
+      tripBuilder.withShortName(tripShortName);
+    }
 
     // Find service ID running on this service date
     final Set<FeedScopedId> serviceIds = transitService
@@ -792,6 +856,19 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       final StopTime stopTime = new StopTime();
       stopTime.setTrip(trip);
       stopTime.setStop(stop);
+
+      //Set Dutch specific fields
+      String plannedPlatform = stopTimeUpdate
+        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+        .getScheduledTrack();
+      String actualPlatform = stopTimeUpdate
+        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+        .getActualTrack();
+
+      if (!plannedPlatform.isBlank()) stopTime.setScheduledPlatform(plannedPlatform);
+
+      if (!actualPlatform.isBlank()) stopTime.setRealtimePlatform(actualPlatform);
+
       // Set arrival time
       if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
         final long arrivalTime = stopTimeUpdate.getArrival().getTime() - midnightSecondsSinceEpoch;
@@ -803,7 +880,10 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
           );
           return UpdateError.result(trip.getId(), INVALID_ARRIVAL_TIME);
         }
-        stopTime.setArrivalTime((int) arrivalTime);
+
+        final int arrivalDelay = stopTimeUpdate.getArrival().getDelay();
+
+        stopTime.setArrivalTime((int) arrivalTime - arrivalDelay);
       }
       // Set departure time
       if (stopTimeUpdate.hasDeparture() && stopTimeUpdate.getDeparture().hasTime()) {
@@ -817,7 +897,10 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
           );
           return UpdateError.result(trip.getId(), INVALID_DEPARTURE_TIME);
         }
-        stopTime.setDepartureTime((int) departureTime);
+
+        final int departureDelay = stopTimeUpdate.getDeparture().getDelay();
+
+        stopTime.setDepartureTime((int) departureTime - departureDelay);
       }
       stopTime.setTimepoint(1); // Exact time
       if (stopTimeUpdate.hasStopSequence()) {
@@ -826,9 +909,11 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       var added = AddedStopTime.ofStopTime(stopTimeUpdate);
       stopTime.setPickupType(added.pickup());
       stopTime.setDropOffType(added.dropOff());
+
       // Add stop time to list
       stopTimes.add(stopTime);
     }
+
 
     // TODO: filter/interpolate stop times like in PatternHopFactory?
 
@@ -851,13 +936,15 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     );
 
     // Update all times to mark trip times as realtime
-    // TODO: should we incorporate the delay field if present?
     for (int stopIndex = 0; stopIndex < newTripTimes.getNumStops(); stopIndex++) {
-      newTripTimes.updateArrivalTime(stopIndex, newTripTimes.getScheduledArrivalTime(stopIndex));
-      newTripTimes.updateDepartureTime(
-        stopIndex,
-        newTripTimes.getScheduledDepartureTime(stopIndex)
-      );
+      int arrivalDelay = stopTimeUpdates.get(stopIndex).getArrival().getDelay();
+      int departureDelay = stopTimeUpdates.get(stopIndex).getDeparture().getDelay();
+
+      newTripTimes.updateArrivalDelay(stopIndex, arrivalDelay);
+      newTripTimes.updateDepartureDelay(stopIndex, departureDelay);
+
+      newTripTimes.setRealtimePlatform(stopIndex, newTripTimes.getRealtimePlatform(stopIndex));
+      newTripTimes.setScheduledPlatform(stopIndex, newTripTimes.getScheduledPlatform(stopIndex));
     }
 
     // Set service code of new trip times
@@ -970,7 +1057,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     final TripUpdate tripUpdate,
     final TripDescriptor tripDescriptor,
     final FeedScopedId tripId,
-    final LocalDate serviceDate
+    final LocalDate serviceDate,
+    final LocalDate serviceDateYesterday,
+    final boolean couldTripHaveStartedYesterday
   ) {
     // Preconditions
     Objects.requireNonNull(tripUpdate);
@@ -999,7 +1088,15 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       final Set<FeedScopedId> serviceIds = transitService
         .getCalendarService()
         .getServiceIdsOnDate(serviceDate);
-      if (!serviceIds.contains(trip.getServiceId())) {
+
+      final Set<FeedScopedId> serviceIdsYesterday = transitService
+        .getCalendarService()
+        .getServiceIdsOnDate(serviceDateYesterday);
+
+      if (
+        !serviceIds.contains(trip.getServiceId()) &&
+        !(couldTripHaveStartedYesterday && serviceIdsYesterday.contains(trip.getServiceId()))
+      ) {
         // TODO: should we support this and change service id of trip?
         debug(tripId, "REPLACEMENT trip has a service date that is not served by trip, skipping.");
         return UpdateError.result(tripId, NO_SERVICE_ON_DATE);
@@ -1051,9 +1148,25 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     var tripId = trip.getId();
     cancelScheduledTrip(tripId, serviceDate, CancelationType.DELETE);
 
+    // Get extension fields
+    var extension = tripUpdate.getTrip().getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
+
+    String realtimeTripId = extension.getRealtimeTripId();
+    String tripShortName = extension.getTripShortName();
+
+    TripBuilder modifiedTrip = trip.copy();
+
+    modifiedTrip.withRealtimeTripId(realtimeTripId);
+    modifiedTrip.withShortName(tripShortName);
+
+    //TODO: Check if this should still be here
+    // Check whether trip id has been used for previously ADDED/REPLACEMENT trip message and mark it
+    // as DELETED
+    cancelPreviouslyAddedTrip(tripId, serviceDate, CancelationType.DELETE);
+
     // Add new trip
     return addTripToGraphAndBuffer(
-      trip,
+      modifiedTrip.build(),
       tripUpdate.getVehicle(),
       tripUpdate.getStopTimeUpdateList(),
       stops,

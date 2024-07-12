@@ -49,7 +49,11 @@ public class Station
     super(builder.getId());
     // Required fields
     this.name = Objects.requireNonNull(builder.getName());
-    this.coordinate = Objects.requireNonNull(builder.getCoordinate());
+    try {
+      this.coordinate = Objects.requireNonNull(builder.getCoordinate());
+    } catch (NullPointerException e) {
+      throw new NullPointerException("Coordinate is null");
+    }
     this.priority =
       Objects.requireNonNullElse(builder.getPriority(), StopTransferPriority.defaultValue());
     this.transfersNotAllowed = builder.isTransfersNotAllowed();

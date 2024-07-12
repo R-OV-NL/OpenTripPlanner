@@ -26,6 +26,10 @@ public class TripBuilder extends AbstractEntityBuilder<Trip, TripBuilder> {
   private String netexInternalPlanningCode;
   private TripAlteration netexAlteration;
 
+  /** Part of the Dutch GTFS specification */
+  private String longName;
+  private String realtimeTripId;
+
   TripBuilder(FeedScopedId id) {
     super(id);
   }
@@ -46,6 +50,8 @@ public class TripBuilder extends AbstractEntityBuilder<Trip, TripBuilder> {
     this.bikesAllowed = original.getBikesAllowed();
     this.wheelchairBoarding = original.getWheelchairBoarding();
     this.netexInternalPlanningCode = original.getNetexInternalPlanningCode();
+    this.longName = original.getLongName();
+    this.realtimeTripId = original.getRealtimeTripId();
   }
 
   public Operator getOperator() {
@@ -171,6 +177,24 @@ public class TripBuilder extends AbstractEntityBuilder<Trip, TripBuilder> {
 
   public TripBuilder withNetexAlteration(TripAlteration netexAlteration) {
     this.netexAlteration = netexAlteration;
+    return this;
+  }
+
+  public String getLongName() {
+    return longName;
+  }
+
+  public TripBuilder withLongName(String longName) {
+    this.longName = longName;
+    return this;
+  }
+
+  public String getRealtimeTripId() {
+    return realtimeTripId;
+  }
+
+  public TripBuilder withRealtimeTripId(String realtimeTripId) {
+    this.realtimeTripId = realtimeTripId;
     return this;
   }
 

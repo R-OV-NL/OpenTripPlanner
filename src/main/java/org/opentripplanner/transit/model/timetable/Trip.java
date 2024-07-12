@@ -40,6 +40,10 @@ public final class Trip extends AbstractTransitEntity<Trip, TripBuilder> impleme
   private final String netexInternalPlanningCode;
   private final TripAlteration netexAlteration;
 
+  /** Part of Dutch GTFS specification */
+  private final String longName;
+  private final String realtimeTripId;
+
   Trip(TripBuilder builder) {
     super(builder.getId());
     // Required fields
@@ -65,6 +69,9 @@ public final class Trip extends AbstractTransitEntity<Trip, TripBuilder> impleme
     this.shapeId = builder.getShapeId();
     this.gtfsBlockId = builder.getGtfsBlockId();
     this.netexInternalPlanningCode = builder.getNetexInternalPlanningCode();
+
+    this.longName = builder.getLongName();
+    this.realtimeTripId = builder.getRealtimeTripId();
   }
 
   public static TripBuilder of(@Nonnull FeedScopedId id) {
@@ -147,6 +154,16 @@ public final class Trip extends AbstractTransitEntity<Trip, TripBuilder> impleme
     return gtfsBlockId;
   }
 
+  @Nullable
+  public String getLongName() {
+    return longName;
+  }
+
+  @Nullable
+  public String getRealtimeTripId() {
+    return realtimeTripId;
+  }
+  
   /**
    * Internal code (non-public identifier) for the journey (e.g. train- or trip number from the
    * planners' tool). This is kept to ensure compatibility with legacy planning systems. In NeTEx
@@ -201,7 +218,9 @@ public final class Trip extends AbstractTransitEntity<Trip, TripBuilder> impleme
       Objects.equals(this.direction, other.direction) &&
       Objects.equals(this.bikesAllowed, other.bikesAllowed) &&
       Objects.equals(this.wheelchairBoarding, other.wheelchairBoarding) &&
-      Objects.equals(this.netexAlteration, other.netexAlteration)
+      Objects.equals(this.netexAlteration, other.netexAlteration) &&
+      Objects.equals(this.longName, other.longName) &&
+      Objects.equals(this.realtimeTripId, other.realtimeTripId)
     );
   }
 

@@ -3468,6 +3468,7 @@ enum VehicleParkingState {
   TEMPORARILY_CLOSED
 }
 
+
 "How close the vehicle is to the stop."
 enum VehicleStopStatus {
   "The vehicle is just about to arrive at the stop (on a stop display, the vehicle symbol typically flashes)."
@@ -3709,6 +3710,7 @@ input CyclingOptimizationInput @oneOf {
   "Use one of the predefined optimization types."
   type: CyclingOptimizationType
 }
+
 
 """
 Is it possible to arrive to the destination with a rented bicycle and does it

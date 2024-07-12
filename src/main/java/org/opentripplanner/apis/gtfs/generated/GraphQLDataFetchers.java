@@ -1078,6 +1078,10 @@ public class GraphQLDataFetchers {
 
     public DataFetcher<Integer> realtimeDeparture();
 
+    public DataFetcher<String> scheduledPlatform();
+
+    public DataFetcher<String> realtimePlatform();
+
     public DataFetcher<String> realtimeState();
 
     public DataFetcher<Integer> scheduledArrival();
@@ -1183,6 +1187,10 @@ public class GraphQLDataFetchers {
     public DataFetcher<String> tripHeadsign();
 
     public DataFetcher<String> tripShortName();
+
+    public DataFetcher<String> tripLongName();
+
+    public DataFetcher<String> realtimeTripId();
 
     public DataFetcher<org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLWheelchairBoarding> wheelchairAccessible();
   }

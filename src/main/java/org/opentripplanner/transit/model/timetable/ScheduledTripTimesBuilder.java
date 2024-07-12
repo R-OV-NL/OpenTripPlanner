@@ -17,6 +17,7 @@ public class ScheduledTripTimesBuilder {
   private int serviceCode;
   private int[] arrivalTimes;
   private int[] departureTimes;
+  private String[] platforms;
   private BitSet timepoints;
   private Trip trip;
   private List<BookingInfo> dropOffBookingInfos;
@@ -27,7 +28,7 @@ public class ScheduledTripTimesBuilder {
   private final DeduplicatorService deduplicator;
 
   ScheduledTripTimesBuilder(@Nullable DeduplicatorService deduplicator) {
-    this(0, NOT_SET, null, null, null, null, null, null, null, null, null, deduplicator);
+    this(0, NOT_SET, null, null, null, null, null, null, null, null, null, null, deduplicator);
   }
 
   ScheduledTripTimesBuilder(
@@ -35,6 +36,7 @@ public class ScheduledTripTimesBuilder {
     int serviceCode,
     int[] arrivalTimes,
     int[] departureTimes,
+    String[] platforms,
     BitSet timepoints,
     Trip trip,
     List<BookingInfo> dropOffBookingInfos,
@@ -48,6 +50,7 @@ public class ScheduledTripTimesBuilder {
     this.serviceCode = serviceCode;
     this.arrivalTimes = arrivalTimes;
     this.departureTimes = departureTimes;
+    this.platforms = platforms;
     this.timepoints = timepoints;
     this.trip = trip;
     this.dropOffBookingInfos = dropOffBookingInfos;
@@ -68,8 +71,8 @@ public class ScheduledTripTimesBuilder {
   }
 
   /**
-   * Add the {@code delta} to the existing timeShift. This is useful when moving a trip
-   * from one time-zone to another.
+   * Add the {@code delta} to the existing timeShift. This is useful when moving a trip from one
+   * time-zone to another.
    */
   public ScheduledTripTimesBuilder plusTimeShift(int delta) {
     this.timeShift += delta;
@@ -94,6 +97,11 @@ public class ScheduledTripTimesBuilder {
     return this;
   }
 
+  public ScheduledTripTimesBuilder withPlatforms(String[] platforms) {
+    this.platforms = deduplicator.deduplicateStringArray(platforms);
+    return this;
+  }
+
   /** For unit testing, uses {@link TimeUtils#time(java.lang.String)}. */
   public ScheduledTripTimesBuilder withArrivalTimes(String arrivalTimes) {
     return withArrivalTimes(TimeUtils.times(arrivalTimes));
@@ -101,6 +109,10 @@ public class ScheduledTripTimesBuilder {
 
   public int[] departureTimes() {
     return departureTimes;
+  }
+
+  public String[] platforms() {
+    return platforms;
   }
 
   public ScheduledTripTimesBuilder withDepartureTimes(int[] departureTimes) {

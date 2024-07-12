@@ -8,6 +8,7 @@ import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
+import com.google.transit.realtime.GtfsRealtimeOVapi;
 import de.mfdz.MfdzRealtimeExtensions;
 import java.net.URI;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class GtfsRealtimeTripUpdateSource {
     this.headers = HttpHeaders.of().acceptProtobuf().add(config.headers()).build();
     MfdzRealtimeExtensions.registerAllExtensions(registry);
     otpHttpClient = new OtpHttpClientFactory().create(LOG);
+    GtfsRealtimeOVapi.registerAllExtensions(registry);
   }
 
   public List<TripUpdate> getUpdates() {

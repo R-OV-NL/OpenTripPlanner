@@ -12,6 +12,7 @@ import com.google.transit.realtime.GtfsRealtime.TripDescriptor;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeEvent;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate.StopTimeUpdate;
+import com.google.transit.realtime.GtfsRealtimeOVapi;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -121,7 +122,21 @@ public class Timetable implements Serializable {
       if (tt.getTrip() == trip) {
         return tt;
       }
+
+      if (
+        tt.getTrip().getRealtimeTripId() != null &&
+        trip.getRealtimeTripId() != null &&
+        trip.getRealtimeTripId().equals(tt.getTrip().getRealtimeTripId())
+      ) {
+        return tt;
+      }
+
+      if (tt.getTrip().getId().equals(trip.getId())) {
+        return tt;
+      }
     }
+
+    LOG.warn("Trip {} {} not found in timetable", trip.getId(), trip.getRealtimeTripId());
     return null;
   }
 
@@ -237,6 +252,17 @@ public class Timetable implements Serializable {
       }
 
       if (match) {
+        // Set Dutch specific fields
+        var extension = update.getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate);
+
+        String plannedPlatform = extension.getScheduledTrack();
+
+        String actualPlatform = extension.getActualTrack();
+
+        if (!plannedPlatform.isEmpty()) newTimes.setScheduledPlatform(i, plannedPlatform);
+
+        if (!actualPlatform.isEmpty()) newTimes.setRealtimePlatform(i, actualPlatform);
+
         StopTimeUpdate.ScheduleRelationship scheduleRelationship = update.hasScheduleRelationship()
           ? update.getScheduleRelationship()
           : StopTimeUpdate.ScheduleRelationship.SCHEDULED;
@@ -323,6 +349,21 @@ public class Timetable implements Serializable {
         newTimes.updateArrivalDelay(i, delay);
         newTimes.updateDepartureDelay(i, delay);
       }
+
+      if (update != null) {
+        // Set Dutch specific fields
+        String plannedPlatform = update
+          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+          .getScheduledTrack();
+
+        String actualPlatform = update
+          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+          .getActualTrack();
+
+        if (!plannedPlatform.isEmpty()) newTimes.setScheduledPlatform(i, plannedPlatform);
+
+        if (!actualPlatform.isEmpty()) newTimes.setRealtimePlatform(i, actualPlatform);
+      }
     }
     if (update != null) {
       LOG.debug(
@@ -398,8 +439,7 @@ public class Timetable implements Serializable {
   }
 
   /**
-   * Apply the same update to all trip-times inculuding scheduled and frequency based
-   * trip times.
+   * Apply the same update to all trip-times inculuding scheduled and frequency based trip times.
    * <p>
    * THIS IS NOT THREAD-SAFE - ONLY USE THIS METHOD DURING GRAPH-BUILD!
    */

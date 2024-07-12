@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.opentripplanner.framework.collection.MapUtils;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.routing.api.request.framework.TimePenalty;
+import org.opentripplanner.gtfs.extension.TripExtension;
 import org.opentripplanner.transit.model.timetable.Trip;
 
 /** Responsible for mapping GTFS TripMapper into the OTP model. */
@@ -72,6 +73,14 @@ class TripMapper {
     lhs.withWheelchairBoarding(WheelchairAccessibilityMapper.map(rhs.getWheelchairAccessible()));
     lhs.withBikesAllowed(BikeAccessMapper.mapForTrip(rhs));
 
+    // Dutch GTFS extension
+    TripExtension tripExtension = rhs.getExtension(TripExtension.class);
+
+    if (tripExtension != null) {
+      lhs.withLongName(tripExtension.getTripLongName());
+      lhs.withRealtimeTripId(tripExtension.getRealtimeTripId());
+    }
+  
     var trip = lhs.build();
     mapSafeTimePenalty(rhs).ifPresent(f -> flexSafeTimePenalties.put(trip, f));
     return trip;

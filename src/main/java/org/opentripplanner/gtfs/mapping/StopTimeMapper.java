@@ -68,7 +68,11 @@ class StopTimeMapper {
       "Trip %s contains stop_time with no stop, location or group.".formatted(rhs.getTrip())
     );
     switch (stopLocation) {
-      case Stop stop -> lhs.setStop(stopMapper.map(stop));
+      case Stop stop -> {
+        lhs.setStop(stopMapper.map(stop));
+        Stop rhsStop = (Stop) rhs.getStop();
+        lhs.setScheduledPlatform(rhsStop.getPlatformCode());
+      }
       case Location location -> lhs.setStop(locationMapper.map(location));
       case LocationGroup locGroup -> lhs.setStop(locationGroupMapper.map(locGroup));
       // TODO: only here for backwards compatibility, this will be removed in the future
@@ -95,6 +99,7 @@ class StopTimeMapper {
     lhs.setTimepoint(rhs.getTimepoint());
     lhs.setStopSequence(rhs.getStopSequence());
     lhs.setStopHeadsign(stopHeadsign);
+
     lhs.setRouteShortName(rhs.getRouteShortName());
     lhs.setPickupType(PickDropMapper.map(rhs.getPickupType()));
     lhs.setDropOffType(PickDropMapper.map(rhs.getDropOffType()));

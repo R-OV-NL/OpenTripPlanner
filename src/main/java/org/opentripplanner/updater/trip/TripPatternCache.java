@@ -59,7 +59,7 @@ public class TripPatternCache {
     if (tripPattern == null) {
       // Generate unique code for trip pattern
       var id = generateUniqueTripPatternCode(trip);
-
+      
       tripPattern =
         TripPattern
           .of(id)
