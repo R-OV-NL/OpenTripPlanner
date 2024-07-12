@@ -89,7 +89,7 @@ public enum OTPFeature {
   FaresV2(false, true, "Enable import of GTFS-Fares v2 data."),
   FlexRouting(false, true, "Enable FLEX routing."),
   GoogleCloudStorage(false, true, "Enable Google Cloud Storage integration."),
-  LegacyRestApi(true, true, "Enable legacy REST API. This API will be removed in the future."),
+  LegacyRestApi(false, true, "Enable legacy REST API. This API will be removed in the future."),
   RealtimeResolver(
     false,
     true,
@@ -104,7 +104,6 @@ public enum OTPFeature {
   SandboxAPIGeocoder(false, true, "Enable the Geocoder API."),
   SandboxAPIMapboxVectorTilesApi(false, true, "Enable Mapbox vector tiles API."),
   SandboxAPIParkAndRideApi(false, true, "Enable park-and-ride endpoint."),
-  SandboxAPITravelTime(false, true, "Enable the isochrone/travel time surface API."),
   TransferAnalyzer(false, true, "Analyze transfers during graph build.");
 
   private static final Object TEST_LOCK = new Object();

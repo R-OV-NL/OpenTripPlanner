@@ -15,15 +15,18 @@ import graphql.schema.DataFetchingEnvironmentImpl;
 import io.micrometer.core.instrument.Metrics;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.opentripplanner._support.time.ZoneIds;
 import org.opentripplanner.apis.transmodel.TransmodelRequestContext;
 import org.opentripplanner.ext.emissions.DefaultEmissionsService;
@@ -64,7 +67,6 @@ public class TripRequestMapperTest implements PlanTestConstants {
 
   private static TransitModelForTest TEST_MODEL = TransitModelForTest.of();
 
-  static final TransmodelRequestContext context;
   private static final Duration MAX_FLEXIBLE = Duration.ofMinutes(20);
 
   private static final Function<StopLocation, String> STOP_TO_ID = s -> s.getId().toString();
@@ -76,8 +78,12 @@ public class TripRequestMapperTest implements PlanTestConstants {
   private static final RegularStop stop2 = TEST_MODEL.stop("ST:stop2", 2, 1).build();
   private static final RegularStop stop3 = TEST_MODEL.stop("ST:stop3", 3, 1).build();
 
+  private static final Graph graph = new Graph();
+  private static final DefaultTransitService transitService;
+
+  private TransmodelRequestContext context;
+
   static {
-    var graph = new Graph();
     var itinerary = newItinerary(Place.forStop(stop1), time("11:00"))
       .bus(route1, 1, time("11:05"), time("11:20"), Place.forStop(stop2))
       .bus(route2, 2, time("11:20"), time("11:40"), Place.forStop(stop3))
@@ -103,8 +109,12 @@ public class TripRequestMapperTest implements PlanTestConstants {
 
     transitModel.updateCalendarServiceData(true, calendarServiceData, DataImportIssueStore.NOOP);
     transitModel.index();
-    final var transitService = new DefaultTransitService(transitModel);
-    var defaultRequest = new RouteRequest();
+    transitService = new DefaultTransitService(transitModel);
+  }
+
+  @BeforeEach
+  void setup() {
+    final RouteRequest defaultRequest = new RouteRequest();
 
     // Change defaults for FLEXIBLE to a lower value than the default 45m. This should restrict the
     // input to be less than 20m, not 45m.
@@ -131,7 +141,7 @@ public class TripRequestMapperTest implements PlanTestConstants {
           new DefaultRealtimeVehicleService(transitService),
           new DefaultVehicleRentalService(),
           new DefaultEmissionsService(new EmissionsDataModel()),
-          RouterConfig.DEFAULT.flexConfig(),
+          RouterConfig.DEFAULT.flexParameters(),
           List.of(),
           null,
           new DefaultStreetLimitationParametersService(new StreetLimitationParameters()),
@@ -333,6 +343,87 @@ public class TripRequestMapperTest implements PlanTestConstants {
       () -> TripRequestMapper.createRequest(executionContext(arguments))
     );
     assertEquals("No match for F:XX:NonExisting.", ex.getMessage());
+  }
+
+  @Test
+  public void testNoModes() {
+    var req = TripRequestMapper.createRequest(executionContext(Map.of()));
+
+    assertEquals(StreetMode.WALK, req.journey().access().mode());
+    assertEquals(StreetMode.WALK, req.journey().egress().mode());
+    assertEquals(StreetMode.WALK, req.journey().direct().mode());
+    assertEquals(StreetMode.WALK, req.journey().transfer().mode());
+  }
+
+  @Test
+  public void testEmptyModes() {
+    Map<String, Object> arguments = Map.of("modes", Map.of());
+    var req = TripRequestMapper.createRequest(executionContext(arguments));
+
+    assertEquals(StreetMode.NOT_SET, req.journey().access().mode());
+    assertEquals(StreetMode.NOT_SET, req.journey().egress().mode());
+    assertEquals(StreetMode.NOT_SET, req.journey().direct().mode());
+    assertEquals(StreetMode.WALK, req.journey().transfer().mode());
+  }
+
+  @Test
+  public void testNullModes() {
+    HashMap<Object, Object> modes = new HashMap<>();
+    modes.put("accessMode", null);
+    modes.put("egressMode", null);
+    modes.put("directMode", null);
+    Map<String, Object> arguments = Map.of("modes", modes);
+    var req = TripRequestMapper.createRequest(executionContext(arguments));
+
+    assertEquals(StreetMode.NOT_SET, req.journey().access().mode());
+    assertEquals(StreetMode.NOT_SET, req.journey().egress().mode());
+    assertEquals(StreetMode.NOT_SET, req.journey().direct().mode());
+    assertEquals(StreetMode.WALK, req.journey().transfer().mode());
+  }
+
+  @Test
+  public void testExplicitModes() {
+    Map<String, Object> arguments = Map.of(
+      "modes",
+      Map.of(
+        "accessMode",
+        StreetMode.SCOOTER_RENTAL,
+        "egressMode",
+        StreetMode.BIKE_RENTAL,
+        "directMode",
+        StreetMode.BIKE_TO_PARK
+      )
+    );
+    var req = TripRequestMapper.createRequest(executionContext(arguments));
+
+    assertEquals(StreetMode.SCOOTER_RENTAL, req.journey().access().mode());
+    assertEquals(StreetMode.BIKE_RENTAL, req.journey().egress().mode());
+    assertEquals(StreetMode.BIKE_TO_PARK, req.journey().direct().mode());
+    assertEquals(StreetMode.WALK, req.journey().transfer().mode());
+  }
+
+  /**
+   * This tests that both the new parameter name 'transferSlack` and the deprecated one
+   * 'minimumTransferTime' (for backwards compatibility) are correctly mapped to the internal
+   * transfer slack as a duration.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = { "transferSlack", "minimumTransferTime" })
+  public void testBackwardsCompatibleTransferSlack(String name) {
+    Map<String, Object> arguments = Map.of(name, 101);
+    var req = TripRequestMapper.createRequest(executionContext(arguments));
+    assertEquals(Duration.ofSeconds(101), req.preferences().transfer().slack());
+  }
+
+  @Test
+  public void testExplicitModesBikeAccess() {
+    Map<String, Object> arguments = Map.of("modes", Map.of("accessMode", StreetMode.BIKE));
+    var req = TripRequestMapper.createRequest(executionContext(arguments));
+
+    assertEquals(StreetMode.BIKE, req.journey().access().mode());
+    assertEquals(StreetMode.NOT_SET, req.journey().egress().mode());
+    assertEquals(StreetMode.NOT_SET, req.journey().direct().mode());
+    assertEquals(StreetMode.BIKE, req.journey().transfer().mode());
   }
 
   private DataFetchingEnvironment executionContext(Map<String, Object> arguments) {

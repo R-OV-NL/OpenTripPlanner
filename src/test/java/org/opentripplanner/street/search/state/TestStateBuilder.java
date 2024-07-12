@@ -16,6 +16,7 @@ import org.opentripplanner.routing.api.request.StreetMode;
 import org.opentripplanner.service.vehiclerental.model.TestFreeFloatingRentalVehicleBuilder;
 import org.opentripplanner.service.vehiclerental.model.TestVehicleRentalStationBuilder;
 import org.opentripplanner.service.vehiclerental.model.VehicleRentalPlace;
+import org.opentripplanner.service.vehiclerental.model.VehicleRentalStation;
 import org.opentripplanner.service.vehiclerental.street.StreetVehicleRentalLink;
 import org.opentripplanner.service.vehiclerental.street.VehicleRentalEdge;
 import org.opentripplanner.service.vehiclerental.street.VehicleRentalPlaceVertex;
@@ -32,7 +33,7 @@ import org.opentripplanner.street.model.edge.StreetTransitStopLink;
 import org.opentripplanner.street.model.vertex.ElevatorOffboardVertex;
 import org.opentripplanner.street.model.vertex.ElevatorOnboardVertex;
 import org.opentripplanner.street.model.vertex.StreetVertex;
-import org.opentripplanner.street.model.vertex.TransitStopVertexBuilder;
+import org.opentripplanner.street.model.vertex.TransitStopVertex;
 import org.opentripplanner.street.search.TraverseMode;
 import org.opentripplanner.street.search.request.StreetSearchRequest;
 import org.opentripplanner.transit.model._data.TransitModelForTest;
@@ -219,6 +220,19 @@ public class TestStateBuilder {
     return arriveAtStop(testModel.stop("stop", count, count).build());
   }
 
+  /**
+   * Add a state that arrives at a rental station.
+   */
+  public TestStateBuilder rentalStation(VehicleRentalStation station) {
+    count++;
+    var from = (StreetVertex) currentState.vertex;
+    var to = new VehicleRentalPlaceVertex(station);
+
+    var link = StreetVehicleRentalLink.createStreetVehicleRentalLink(from, to);
+    currentState = link.traverse(currentState)[0];
+    return this;
+  }
+
   public TestStateBuilder enterStation(String id) {
     count++;
     var from = (StreetVertex) currentState.vertex;
@@ -266,7 +280,7 @@ public class TestStateBuilder {
   @Nonnull
   private TestStateBuilder arriveAtStop(RegularStop stop) {
     var from = (StreetVertex) currentState.vertex;
-    var to = new TransitStopVertexBuilder().withStop(stop).build();
+    var to = TransitStopVertex.of().withStop(stop).build();
 
     Edge edge;
     if (currentState.getRequest().arriveBy()) {
