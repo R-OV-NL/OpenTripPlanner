@@ -1,7 +1,7 @@
 export default {
   introspection: {
     type: 'sdl',
-    paths: ['src/main/resources/org/opentripplanner/apis/gtfs/schema.graphqls'],
+    paths: ['application/src/main/resources/org/opentripplanner/apis/gtfs/schema.graphqls'],
   },
   website: {
     template: 'carbon-multi-page',
@@ -9,6 +9,7 @@ export default {
     options: {
       siteRoot: '/api/dev-2.x/graphql-gtfs',
       appLogo: 'https://docs.opentripplanner.org/en/dev-2.x/images/otp-logo.svg',
+      customStyles: ['https://docs.opentripplanner.org/en/dev-2.x/css/magidoc-overrides.css'],
       pages: [{
         title: 'Introduction',
         content: `
@@ -37,6 +38,7 @@ To learn how to deactivate it, read the
         'Polyline': '<>',
         'GeoJson': '<>',
         'OffsetDateTime': '2024-02-05T18:04:23+01:00',
+        'LocalDate': '2024-05-24',
         'Duration': 'PT10M',
         'CoordinateValue': 19.24,
         'Reluctance': 3.1,
@@ -44,7 +46,6 @@ To learn how to deactivate it, read the
         'Cost': 100,
         'Ratio': 0.25,
         'Locale': 'en'
-
       },
     }
   },
