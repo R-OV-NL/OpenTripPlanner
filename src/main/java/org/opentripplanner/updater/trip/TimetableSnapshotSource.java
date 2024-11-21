@@ -301,9 +301,9 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     });
 
     var updateResult = UpdateResult.ofResults(results);
-    
+
     //if (updateIncrementality == FULL_DATASET) {
-      logUpdateResult(feedId, failuresByRelationship, updateResult);
+    logUpdateResult(feedId, failuresByRelationship, updateResult);
     //}
     return updateResult;
   }
@@ -679,10 +679,10 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
     var tripBuilder = Trip.of(tripId);
     tripBuilder.withRoute(route);
 
-    if(tripUpdate.hasTripProperties()) {
+    if (tripUpdate.hasTripProperties()) {
       var properties = tripUpdate.getTripProperties();
 
-      if(properties.hasShapeId()) {
+      if (properties.hasShapeId()) {
         tripBuilder.withShapeId(new FeedScopedId(tripId.getFeedId(), properties.getShapeId()));
       }
     }
@@ -897,7 +897,6 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       // Add stop time to list
       stopTimes.add(stopTime);
     }
-
 
     // TODO: filter/interpolate stop times like in PatternHopFactory?
 

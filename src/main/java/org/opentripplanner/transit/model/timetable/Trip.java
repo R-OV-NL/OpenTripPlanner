@@ -163,7 +163,7 @@ public final class Trip extends AbstractTransitEntity<Trip, TripBuilder> impleme
   public String getRealtimeTripId() {
     return realtimeTripId;
   }
-  
+
   /**
    * Internal code (non-public identifier) for the journey (e.g. train- or trip number from the
    * planners' tool). This is kept to ensure compatibility with legacy planning systems. In NeTEx
