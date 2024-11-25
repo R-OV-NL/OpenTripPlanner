@@ -38,5 +38,10 @@ public record UpdateSuccess(List<WarningType> warnings, String producer) {
      * stops have been removed.
      */
     UNKNOWN_STOPS_REMOVED_FROM_ADDED_TRIP,
+
+    /**
+     * A trip was marked as cancelled, but did not exist in the static data.
+     */
+    NO_TRIP_FOR_CANCELLATION_FOUND,
   }
 }

@@ -1,0 +1,9 @@
+{
+  "areaVisibility": true,
+  "buildReportDir": "build-report",
+  "dataImportReport": true,
+  "maxTransferDuration": "PT20M",
+  "platformEntriesLinking": true,
+  "staticBikeParkAndRide": false,
+  "staticParkAndRide": false
+}

@@ -1,0 +1,57 @@
+{
+  "routingDefaults": {
+    "numItineraries": 6,
+    "waitReluctance": 0.5,
+    "transferSlack": 0,
+    "walk": {
+      "speed": 1.4,
+      "stairsReluctance": 1.4
+    },
+    "bike": {
+    },
+    "car": {
+      "pickupTime": "PT4M"
+    }
+  },
+  "transit": {
+    "transferCacheMaxSize": 100
+  },
+  "updaters": [
+    {
+      "feedId": "NL-TRAIN",
+      "type": "stop-time-updater",
+      "frequency": "PT30S",
+      "url": "http://localhost:9595/trainUpdates.pb",
+      "backwardsDelayPropagationType": "ALWAYS"
+    },
+    {
+      "type": "vehicle-rental",
+      "sourceType": "gbfs",
+      "frequency": "PT1H",
+      "network": "amlflex-buitenkaag",
+      "url": "https://gbfs.openov.nl/amlflex/buitenkaag/gbfs.json"
+    },
+    {
+      "type": "vehicle-rental",
+      "sourceType": "gbfs",
+      "frequency": "PT1H",
+      "network": "twentsflex-nl",
+      "url": "https://gbfs.openov.nl/twentsflex/nl/gbfs.json"
+    },
+    {
+      "type": "vehicle-rental",
+      "sourceType": "gbfs",
+      "frequency": "PT1H",
+      "network": "ovfiets",
+      "url": "https://gbfs.openov.nl/ovfiets/gbfs.json",
+      "allowKeepingRentedVehicleAtDestination": true
+    },
+    {
+      "type": "vehicle-parking",
+      "sourceType": "bicycle-park-api",
+      "frequency": "PT1M",
+      "feedId": "fietsenstalling",
+      "url": "https://otp2.moopmobility.nl/data/bicycle_parkings.json"
+    }
+  ]
+}
