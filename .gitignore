@@ -56,3 +56,4 @@ graph.obj
 *.osm.pbf
 **/streetGraph.obj
 **/graph.obj
+**/bin/*.jar

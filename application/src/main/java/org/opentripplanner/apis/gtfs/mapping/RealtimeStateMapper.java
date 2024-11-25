@@ -14,9 +14,10 @@ public class RealtimeStateMapper {
     return switch (state) {
       case SCHEDULED -> GraphQLTypes.GraphQLRealtimeState.SCHEDULED;
       case UPDATED -> GraphQLTypes.GraphQLRealtimeState.UPDATED;
-      case CANCELED, DELETED -> GraphQLTypes.GraphQLRealtimeState.CANCELED;
+      case CANCELED -> GraphQLTypes.GraphQLRealtimeState.CANCELED;
       case ADDED -> GraphQLTypes.GraphQLRealtimeState.ADDED;
       case MODIFIED -> GraphQLTypes.GraphQLRealtimeState.MODIFIED;
+      case DELETED -> GraphQLTypes.GraphQLRealtimeState.DELETED;
     };
   }
 }

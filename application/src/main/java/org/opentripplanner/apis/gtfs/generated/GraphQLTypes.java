@@ -4227,6 +4227,7 @@ public class GraphQLTypes {
     MODIFIED,
     SCHEDULED,
     UPDATED,
+    DELETED,
   }
 
   /** Actions to take relative to the current position when engaging a walking/driving step. */

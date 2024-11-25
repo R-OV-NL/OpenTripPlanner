@@ -32,22 +32,23 @@ public enum ApiRealTimeState {
    * The trip information has been updated and resulted in a different trip pattern compared to the
    * trip pattern of the scheduled trip.
    */
-  MODIFIED;
+  MODIFIED,
+
+  /**
+   * The trip should not be visible to the end user. Either it has been set as deleted in the
+   * real-time feed, or it has been replaced by another trip on another pattern.
+   */
+  DELETED;
 
   public static ApiRealTimeState RealTimeState(RealTimeState other) {
-    switch (other) {
-      case SCHEDULED:
-        return ApiRealTimeState.SCHEDULED;
-      case UPDATED:
-        return ApiRealTimeState.UPDATED;
-      case CANCELED:
-        return ApiRealTimeState.CANCELED;
-      case ADDED:
-        return ApiRealTimeState.ADDED;
-      case MODIFIED:
-        return ApiRealTimeState.MODIFIED;
-      default:
-        throw new IllegalArgumentException();
-    }
+      return switch (other) {
+          case SCHEDULED -> ApiRealTimeState.SCHEDULED;
+          case UPDATED -> ApiRealTimeState.UPDATED;
+          case CANCELED -> ApiRealTimeState.CANCELED;
+          case ADDED -> ApiRealTimeState.ADDED;
+          case MODIFIED -> ApiRealTimeState.MODIFIED;
+          case DELETED -> ApiRealTimeState.DELETED;
+          default -> throw new IllegalArgumentException();
+      };
   }
 }
