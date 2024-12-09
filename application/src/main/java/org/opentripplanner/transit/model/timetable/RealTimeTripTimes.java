@@ -53,7 +53,7 @@ public final class RealTimeTripTimes implements TripTimes {
       original.headsigns,
       original.occupancyStatus,
       original.wheelchairAccessibility,
-      original.platforms
+      original.platforms.clone()
     );
   }
 
@@ -72,7 +72,7 @@ public final class RealTimeTripTimes implements TripTimes {
     this.headsigns = headsigns;
     this.occupancyStatus = occupancyStatus;
     this.wheelchairAccessibility = wheelchairAccessibility;
-    this.platforms = platforms;
+    this.platforms = platforms.clone();
     // We set these to null to indicate that this is a non-updated/scheduled TripTimes.
     // We cannot point to the scheduled times because we do not want to make an unnecessary copy.
     this.arrivalTimes = null;
