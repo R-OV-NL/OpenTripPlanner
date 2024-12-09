@@ -1661,6 +1661,7 @@ public class GraphQLTypes {
   public enum GraphQLPlanAccessMode {
     BICYCLE,
     BICYCLE_PARKING,
+    BICYCLE_PICKUP,
     BICYCLE_RENTAL,
     CAR,
     CAR_DROP_OFF,
@@ -1746,6 +1747,7 @@ public class GraphQLTypes {
   public enum GraphQLPlanEgressMode {
     BICYCLE,
     BICYCLE_RENTAL,
+    BICYCLE_PICKUP,
     CAR,
     CAR_PICKUP,
     CAR_RENTAL,

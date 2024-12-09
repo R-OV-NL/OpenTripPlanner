@@ -410,6 +410,7 @@ public class EnumTypes {
                     "Bike to a bike parking area, " +
                             "then walk the rest of the way. Direct mode and access mode only."
             )
+            .value("park_bike", StreetMode.BICYCLE_PICKUP, "Walk to a bike parking area, then bike the rest of the way.")
             .value(
                     "bike_rental",
                     StreetMode.BIKE_RENTAL,

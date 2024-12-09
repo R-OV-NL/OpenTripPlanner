@@ -57,3 +57,9 @@ graph.obj
 **/streetGraph.obj
 **/graph.obj
 **/bin/*.jar
+/build-report/
+/bin/build-report/
+**/build-report/**
+/bin-netex/**
+/bin/**
+/bin/*.jar

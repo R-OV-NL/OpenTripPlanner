@@ -24,6 +24,11 @@ public enum StreetMode implements DocumentedEnum<StreetMode> {
    * Direct mode and access mode only.
    */
   BIKE_TO_PARK(Feature.ACCESS, Feature.WALKING, Feature.CYCLING, Feature.PARKING),
+
+  /**
+   * Walk to a bike parking area, then bike the rest of the way.
+   */
+  BICYCLE_PICKUP(Feature.EGRESS, Feature.WALKING, Feature.CYCLING, Feature.RENTING),
   /**
    * Walk to a bike rental point, bike to a bike rental drop-off point, and walk the rest of the
    * way. This can include bike rental at fixed locations or free-floating services.
@@ -136,6 +141,12 @@ public enum StreetMode implements DocumentedEnum<StreetMode> {
     See [Configuring GBFS](UpdaterConfig.md#gbfs-vehicle-rental-systems) on how to add one.
     """;
 
+  private static String PARKING_PREREQ =
+    """
+    
+    _Prerequisite:_ Parking areas need to be added to OTP from dynamic data feeds. See [Vehicle Parking Updaters](https://docs.opentripplanner.org/en/dev-2.x/sandbox/VehicleParking) on how to add one.
+    """;
+
   @Override
   public String enumValueDescription() {
     return switch (this) {
@@ -153,6 +164,12 @@ public enum StreetMode implements DocumentedEnum<StreetMode> {
         
         _Prerequisite:_ Bicycle parking stations present in the OSM file and visible to OTP by enabling the property `staticBikeParkAndRide` during graph build.
         """;
+
+      case BICYCLE_PICKUP -> """
+        Walking to a bicycle parking area, taking a bicycle from the parking area and cycling the rest of the way.
+        This mode needs to be combined with at least one transit mode otherwise it behaves like an ordinary bicycle journey.
+        """ + PARKING_PREREQ;
+
       case BIKE_RENTAL -> """
         Taking a rented, shared-mobility bike for part or the entirety of the route.
         """ +

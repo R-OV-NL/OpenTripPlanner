@@ -194,6 +194,7 @@ public class VehicleRentalEdge extends Edge {
 
   private static Set<RentalFormFactor> allowedModes(StreetMode streetMode) {
     return switch (streetMode) {
+      case BICYCLE_PICKUP -> Set.of(RentalFormFactor.BICYCLE);
       case BIKE_RENTAL -> Set.of(RentalFormFactor.BICYCLE, RentalFormFactor.CARGO_BICYCLE);
       case SCOOTER_RENTAL -> Set.of(
         RentalFormFactor.SCOOTER,

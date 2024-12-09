@@ -1824,6 +1824,8 @@ enum StreetMode {
   foot
   "Walk to a scooter rental point, ride a scooter to a scooter rental drop-off point, and walk the rest of the way. This can include scooter rental at fixed locations or free-floating services."
   scooter_rental
+  "Walk to a bike parking area, and pick up a bike. Ride the bike to the destination and keep the bike.",
+  park_bike
 }
 
 enum TransportMode {
