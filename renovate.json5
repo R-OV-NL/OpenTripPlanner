@@ -101,7 +101,8 @@
         "com.google.cloud:libraries-bom",
         "com.google.guava:guava",
         "io.micrometer:micrometer-registry-prometheus",
-        "io.micrometer:micrometer-registry-influx"
+        "io.micrometer:micrometer-registry-influx",
+        "com.google.protobuf:protobuf-java"
       ],
       "schedule": "on the 7th through 8th day of the month"
     },
@@ -143,12 +144,22 @@
       "schedule": "on the 4th day of the month"
     },
     {
+      "groupName": "Low-risk dependencies (patch)",
+      "matchUpdateTypes": ["patch"],
+      "schedule": ["on the 27th day of the month"],
+      "matchPackageNames": [
+        "org.glassfish.jersey.{/,}**",
+      ]
+    },
+    {
       "description": "give some projects time to publish a changelog before opening the PR",
       "matchPackageNames": [
-        "com.google.dagger:",
-        "com.fasterxml.jackson"
+        "com.google.dagger:{/,}**",
+        "com.fasterxml.jackson:{/,}**",
+        "com.fasterxml.jackson.datatype::{/,}**"
       ],
-      "minimumReleaseAge": "1 week"
+      "minimumReleaseAge": "1 week",
+      "schedule": "on the 13th through 14th day of the month"
     },
     {
       "description": "Geotools takes a while to publish a changelog and since it pulls in JTS it can change the serialization of the graph",
