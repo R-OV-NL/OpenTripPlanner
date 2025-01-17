@@ -41,7 +41,7 @@ public final class RealTimeTripTimes implements TripTimes {
       null,
       null,
       scheduledTripTimes.getWheelchairAccessibility(),
-      scheduledTripTimes.copyOfNoDuplication().platforms()
+      scheduledTripTimes.copyOfNoDuplication().platforms().clone()
     );
   }
 
@@ -53,7 +53,7 @@ public final class RealTimeTripTimes implements TripTimes {
       original.headsigns,
       original.occupancyStatus,
       original.wheelchairAccessibility,
-      original.platforms
+      original.platforms.clone()
     );
   }
 

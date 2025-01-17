@@ -164,6 +164,24 @@ public class EstimatedCallType {
       .field(
         GraphQLFieldDefinition
           .newFieldDefinition()
+          .name("expectedPlatform")
+          .type(Scalars.GraphQLString)
+          .description("Expected platform for this call.")
+          .dataFetcher(environment -> ((TripTimeOnDate) environment.getSource()).getRealtimePlatform())
+          .build()
+      )
+      .field(
+          GraphQLFieldDefinition
+            .newFieldDefinition()
+            .name("actualPlatform")
+            .type(Scalars.GraphQLString)
+            .description("Aimed (scheduled) platform for this call.")
+            .dataFetcher(environment -> ((TripTimeOnDate) environment.getSource()).getScheduledPlatform())
+            .build()
+      )
+      .field(
+        GraphQLFieldDefinition
+          .newFieldDefinition()
           .name("timingPoint")
           .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
           .description(

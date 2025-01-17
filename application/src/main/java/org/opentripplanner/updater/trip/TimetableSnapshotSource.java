@@ -963,18 +963,6 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       stopTime.setTrip(trip);
       stopTime.setStop(stop);
 
-      //Set Dutch specific fields
-      String plannedPlatform = stopTimeUpdate
-        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-        .getScheduledTrack();
-      String actualPlatform = stopTimeUpdate
-        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-        .getActualTrack();
-
-      if (!plannedPlatform.isBlank()) stopTime.setScheduledPlatform(plannedPlatform);
-
-      if (!actualPlatform.isBlank()) stopTime.setRealtimePlatform(actualPlatform);
-
       // Set arrival time
       if (stopTimeUpdate.hasArrival() && stopTimeUpdate.getArrival().hasTime()) {
         final long arrivalTime = stopTimeUpdate.getArrival().getTime() - midnightSecondsSinceEpoch;
@@ -1050,8 +1038,22 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       newTripTimes.updateArrivalDelay(stopIndex, arrivalDelay);
       newTripTimes.updateDepartureDelay(stopIndex, departureDelay);
 
-      newTripTimes.setRealtimePlatform(stopIndex, newTripTimes.getRealtimePlatform(stopIndex));
-      newTripTimes.setScheduledPlatform(stopIndex, newTripTimes.getScheduledPlatform(stopIndex));
+      String plannedPlatform = stopTimeUpdates
+          .get(stopIndex)
+          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+          .getScheduledTrack();
+
+      String actualPlatform = stopTimeUpdates
+          .get(stopIndex)
+          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+          .getActualTrack();
+
+      if(!plannedPlatform.equals(actualPlatform)) {
+        debug(trip.getId(), serviceDate, "Planned platform {} and actual platform {} are not equal", plannedPlatform, actualPlatform);
+      }
+
+      if (!plannedPlatform.isBlank()) newTripTimes.setScheduledPlatform(stopIndex, plannedPlatform);
+      if (!actualPlatform.isBlank()) newTripTimes.setRealtimePlatform(stopIndex, actualPlatform);
     }
 
     // Set service code of new trip times
