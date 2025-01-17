@@ -6,16 +6,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.routing.linking.DisposableEdgeCollection;
 import org.opentripplanner.routing.linking.LinkingDirection;
 import org.opentripplanner.routing.linking.VertexLinker;
-import org.opentripplanner.routing.vehicle_parking.VehicleParking;
-import org.opentripplanner.routing.vehicle_parking.VehicleParkingHelper;
-import org.opentripplanner.routing.vehicle_parking.VehicleParkingService;
-import org.opentripplanner.routing.vehicle_parking.VehicleParkingState;
+import org.opentripplanner.service.vehicleparking.VehicleParkingRepository;
+import org.opentripplanner.service.vehicleparking.model.VehicleParking;
+import org.opentripplanner.service.vehicleparking.model.VehicleParkingHelper;
+import org.opentripplanner.service.vehicleparking.model.VehicleParkingState;
 import org.opentripplanner.street.model.edge.StreetVehicleParkingLink;
 import org.opentripplanner.street.model.edge.VehicleParkingEdge;
 import org.opentripplanner.street.model.vertex.VehicleParkingEntranceVertex;
@@ -26,7 +27,6 @@ import org.opentripplanner.updater.GraphWriterRunnable;
 import org.opentripplanner.updater.RealTimeUpdateContext;
 import org.opentripplanner.updater.spi.DataSource;
 import org.opentripplanner.updater.spi.PollingGraphUpdater;
-import org.opentripplanner.updater.spi.WriteToGraphCallback;
 import org.opentripplanner.utils.tostring.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,34 +42,28 @@ public class VehicleParkingUpdater extends PollingGraphUpdater {
   private final Map<VehicleParking, List<DisposableEdgeCollection>> tempEdgesByPark = new HashMap<>();
   private final DataSource<VehicleParking> source;
   private final List<VehicleParking> oldVehicleParkings = new ArrayList<>();
-  private WriteToGraphCallback saveResultOnGraph;
   private final VertexLinker linker;
 
-  private final VehicleParkingService vehicleParkingService;
+  private final VehicleParkingRepository parkingRepository;
 
   public VehicleParkingUpdater(
     VehicleParkingUpdaterParameters parameters,
     DataSource<VehicleParking> source,
     VertexLinker vertexLinker,
-    VehicleParkingService vehicleParkingService
+    VehicleParkingRepository parkingRepository
   ) {
     super(parameters);
     this.source = source;
     // Creation of network linker library will not modify the graph
     this.linker = vertexLinker;
     // Adding a vehicle parking station service needs a graph writer runnable
-    this.vehicleParkingService = vehicleParkingService;
+    this.parkingRepository = parkingRepository;
 
     LOG.info("Creating vehicle-parking updater running every {}: {}", pollingPeriod(), source);
   }
 
   @Override
-  public void setup(WriteToGraphCallback writeToGraphCallback) {
-    this.saveResultOnGraph = writeToGraphCallback;
-  }
-
-  @Override
-  protected void runPolling() {
+  protected void runPolling() throws InterruptedException, ExecutionException {
     LOG.debug("Updating vehicle parkings from {}", source);
     if (!source.update()) {
       LOG.debug("No updates");
@@ -81,7 +75,7 @@ public class VehicleParkingUpdater extends PollingGraphUpdater {
     VehicleParkingGraphWriterRunnable graphWriterRunnable = new VehicleParkingGraphWriterRunnable(
       vehicleParkings
     );
-    saveResultOnGraph.execute(graphWriterRunnable);
+    updateGraph(graphWriterRunnable);
   }
 
   private class VehicleParkingGraphWriterRunnable implements GraphWriterRunnable {
@@ -155,7 +149,7 @@ public class VehicleParkingUpdater extends PollingGraphUpdater {
         tempEdgesByPark.put(updatedVehicleParking, disposableEdgeCollectionsForVertex);
       }
 
-      vehicleParkingService.updateVehicleParking(toAdd, toRemove);
+      parkingRepository.updateVehicleParking(toAdd, toRemove);
 
       oldVehicleParkings.removeAll(toRemove);
       oldVehicleParkings.addAll(toAdd);

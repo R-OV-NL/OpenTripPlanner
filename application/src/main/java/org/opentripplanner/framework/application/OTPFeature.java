@@ -50,11 +50,6 @@ public enum OTPFeature {
   ),
   FloatingBike(true, false, "Enable floating bike routing."),
   GtfsGraphQlApi(true, false, "Enable the [GTFS GraphQL API](apis/GTFS-GraphQL-API.md)."),
-  GtfsGraphQlApiRentalStationFuzzyMatching(
-    false,
-    false,
-    "Does vehicleRentalStation query also allow ids that are not feed scoped."
-  ),
   /**
    * If this feature flag is switched on, then the minimum transfer time is not the minimum transfer
    * time, but the definitive transfer time. Use this to override what we think the transfer will
@@ -96,6 +91,12 @@ public enum OTPFeature {
     false,
     false,
     "Whether the @async annotation in the GraphQL schema should lead to the fetch being executed asynchronously. This allows batch or alias queries to run in parallel at the cost of consuming extra threads."
+  ),
+  WaitForGraphUpdateInPollingUpdaters(
+    true,
+    false,
+    "Make all polling updaters wait for graph updates to complete before finishing. " +
+    "If this is not enabled, the updaters will finish after submitting the task to update the graph."
   ),
   Co2Emissions(false, true, "Enable the emissions sandbox module."),
   DataOverlay(
