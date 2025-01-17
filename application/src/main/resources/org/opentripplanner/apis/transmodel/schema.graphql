@@ -1705,6 +1705,8 @@ enum RealtimeState {
   Added
   "The service journey has been canceled by a real-time update."
   canceled
+  "The service journey should not be visible to the end user. Either it has been set as deleted in the real-time feed, or it has been replaced by another service journey on another pattern."
+  deleted
   "The service journey information has been updated and resulted in a different journey pattern compared to the journey pattern of the scheduled service journey."
   modified
   "The service journey information comes from the regular time table, i.e. no real-time update has been applied."
