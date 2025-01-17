@@ -13,6 +13,7 @@ public class AccessModeMapper {
       case BICYCLE -> StreetMode.BIKE;
       case BICYCLE_RENTAL -> StreetMode.BIKE_RENTAL;
       case BICYCLE_PARKING -> StreetMode.BIKE_TO_PARK;
+      case BICYCLE_PICKUP -> StreetMode.BICYCLE_PICKUP;
       case CAR -> StreetMode.CAR;
       case CAR_RENTAL -> StreetMode.CAR_RENTAL;
       case CAR_PARKING -> StreetMode.CAR_TO_PARK;

@@ -90,6 +90,8 @@ public class QualifiedModeSet implements Serializable {
             mBuilder.withEgressMode(StreetMode.WALK);
             mBuilder.withDirectMode(StreetMode.BIKE_TO_PARK);
             mBuilder.withTransferMode(StreetMode.WALK);
+          } else if (requestMode.qualifiers.contains(Qualifier.PICKUP)) {
+            mBuilder.withAllStreetModes(StreetMode.BIKE_RENTAL);
           } else {
             mBuilder.withAllStreetModes(StreetMode.BIKE);
           }
