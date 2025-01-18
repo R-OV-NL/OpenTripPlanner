@@ -1039,17 +1039,23 @@ public class TimetableSnapshotSource implements TimetableSnapshotProvider {
       newTripTimes.updateDepartureDelay(stopIndex, departureDelay);
 
       String plannedPlatform = stopTimeUpdates
-          .get(stopIndex)
-          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-          .getScheduledTrack();
+        .get(stopIndex)
+        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+        .getScheduledTrack();
 
       String actualPlatform = stopTimeUpdates
-          .get(stopIndex)
-          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-          .getActualTrack();
+        .get(stopIndex)
+        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+        .getActualTrack();
 
-      if(!plannedPlatform.equals(actualPlatform)) {
-        debug(trip.getId(), serviceDate, "Planned platform {} and actual platform {} are not equal", plannedPlatform, actualPlatform);
+      if (!plannedPlatform.equals(actualPlatform)) {
+        debug(
+          trip.getId(),
+          serviceDate,
+          "Planned platform {} and actual platform {} are not equal",
+          plannedPlatform,
+          actualPlatform
+        );
       }
 
       if (!plannedPlatform.isBlank()) newTripTimes.setScheduledPlatform(stopIndex, plannedPlatform);

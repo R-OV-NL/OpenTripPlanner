@@ -18,10 +18,17 @@
   },
   "updaters": [
     {
-      "feedId": "NL-TRAIN",
+      "feedId": "NL",
       "type": "stop-time-updater",
       "frequency": "PT30S",
-      "url": "http://localhost:9595/trainUpdates.pb",
+      "url": "https://gtfs-rt.r-ov.nl/trainUpdates.pb",
+      "backwardsDelayPropagationType": "ALWAYS"
+    },
+    {
+      "feedId": "NL",
+      "type": "stop-time-updater",
+      "frequency": "PT60S",
+      "url": "http://gtfs.ovapi.nl/nl/tripUpdates.pb",
       "backwardsDelayPropagationType": "ALWAYS"
     },
     {
