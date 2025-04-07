@@ -6,8 +6,11 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import org.opentripplanner.apis.transmodel.TransmodelRequestContext;
 import org.opentripplanner.apis.transmodel.mapping.TransitIdMapper;
 import org.opentripplanner.framework.graphql.GraphQLUtils;
@@ -18,7 +21,7 @@ import org.opentripplanner.transit.service.TransitService;
 
 /**
  * Provide some of the commonly used "chain" of methods. Like all ids should be created the same
- * wayThis
+ * way.
  */
 public class GqlUtil {
 
@@ -46,8 +49,7 @@ public class GqlUtil {
   }
 
   public static GraphQLFieldDefinition newTransitIdField() {
-    return GraphQLFieldDefinition
-      .newFieldDefinition()
+    return GraphQLFieldDefinition.newFieldDefinition()
       .name("id")
       .type(new GraphQLNonNull(Scalars.GraphQLID))
       .dataFetcher(env -> TransitIdMapper.mapEntityIDToApi(env.getSource()))
@@ -55,8 +57,7 @@ public class GqlUtil {
   }
 
   public static GraphQLInputObjectField newIdListInputField(String name, String description) {
-    return GraphQLInputObjectField
-      .newInputObjectField()
+    return GraphQLInputObjectField.newInputObjectField()
       .name(name)
       .description(description)
       .type(new GraphQLList(Scalars.GraphQLID))
@@ -95,5 +96,16 @@ public class GqlUtil {
     return lang != null
       ? GraphQLUtils.getLocale(environment, lang)
       : GraphQLUtils.getLocale(environment);
+  }
+
+  /**
+   * Null-safe handling of a collection of type T. Returns null if the incoming collection is null.
+   * Null elements are filtered out.
+   */
+  public static <T> List<T> toList(@Nullable Collection<T> args) {
+    if (args == null) {
+      return null;
+    }
+    return args.stream().filter(Objects::nonNull).toList();
   }
 }

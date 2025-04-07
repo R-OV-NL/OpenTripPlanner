@@ -46,38 +46,33 @@ public class EstimatedCallType {
     GraphQLOutputType datedServiceJourneyType,
     GraphQLScalarType dateTimeScalar
   ) {
-    return GraphQLObjectType
-      .newObject()
+    return GraphQLObjectType.newObject()
       .name("EstimatedCall")
       .description(
         "List of visits to quays as part of vehicle journeys. Updated with real time information where available"
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("quay")
           .type(new GraphQLNonNull(quayType))
           .dataFetcher(environment -> ((TripTimeOnDate) environment.getSource()).getStop())
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("aimedArrivalTime")
           .description("Scheduled time of arrival at quay. Not affected by read time updated")
           .type(new GraphQLNonNull(dateTimeScalar))
-          .dataFetcher(environment ->
-            1000 *
-            (
-              ((TripTimeOnDate) environment.getSource()).getServiceDayMidnight() +
-              ((TripTimeOnDate) environment.getSource()).getScheduledArrival()
-            )
+          .dataFetcher(
+            environment ->
+              1000 *
+              (((TripTimeOnDate) environment.getSource()).getServiceDayMidnight() +
+                ((TripTimeOnDate) environment.getSource()).getScheduledArrival())
           )
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("expectedArrivalTime")
           .type(new GraphQLNonNull(dateTimeScalar))
           .description(
@@ -92,8 +87,7 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("actualArrivalTime")
           .type(dateTimeScalar)
           .description(
@@ -111,23 +105,20 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("aimedDepartureTime")
           .description("Scheduled time of departure from quay. Not affected by read time updated")
           .type(new GraphQLNonNull(dateTimeScalar))
-          .dataFetcher(environment ->
-            1000 *
-            (
-              ((TripTimeOnDate) environment.getSource()).getServiceDayMidnight() +
-              ((TripTimeOnDate) environment.getSource()).getScheduledDeparture()
-            )
+          .dataFetcher(
+            environment ->
+              1000 *
+              (((TripTimeOnDate) environment.getSource()).getServiceDayMidnight() +
+                ((TripTimeOnDate) environment.getSource()).getScheduledDeparture())
           )
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("expectedDepartureTime")
           .type(new GraphQLNonNull(dateTimeScalar))
           .description(
@@ -143,8 +134,7 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("actualDepartureTime")
           .type(dateTimeScalar)
           .description(
@@ -180,8 +170,7 @@ public class EstimatedCallType {
             .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("timingPoint")
           .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
           .description(
@@ -191,8 +180,7 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("realtime")
           .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
           .description("Whether this call has been updated with real time information.")
@@ -200,8 +188,7 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("predictionInaccurate")
           .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
           .description("Whether the updated estimates are expected to be inaccurate.")
@@ -211,16 +198,14 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("realtimeState")
           .type(new GraphQLNonNull(EnumTypes.REALTIME_STATE))
           .dataFetcher(environment -> ((TripTimeOnDate) environment.getSource()).getRealTimeState())
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("occupancyStatus")
           .type(new GraphQLNonNull(EnumTypes.OCCUPANCY_STATUS))
           .dataFetcher(environment ->
@@ -231,16 +216,14 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("stopPositionInPattern")
           .type(new GraphQLNonNull(Scalars.GraphQLInt))
           .dataFetcher(environment -> ((TripTimeOnDate) environment.getSource()).getStopIndex())
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("forBoarding")
           .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
           .description("Whether vehicle may be boarded at quay.")
@@ -250,8 +233,7 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("forAlighting")
           .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
           .description("Whether vehicle may be alighted at quay.")
@@ -261,19 +243,18 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("requestStop")
           .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
           .description("Whether vehicle will only stop on request.")
-          .dataFetcher(environment ->
-            ((TripTimeOnDate) environment.getSource()).getDropoffType() == COORDINATE_WITH_DRIVER
+          .dataFetcher(
+            environment ->
+              ((TripTimeOnDate) environment.getSource()).getDropoffType() == COORDINATE_WITH_DRIVER
           )
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("cancellation")
           .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
           .description(
@@ -289,8 +270,7 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("date")
           .type(new GraphQLNonNull(TransmodelScalars.DATE_SCALAR))
           .description("The date the estimated call is valid for.")
@@ -298,54 +278,47 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("serviceJourney")
           .type(new GraphQLNonNull(serviceJourneyType))
           .dataFetcher(environment -> ((TripTimeOnDate) environment.getSource()).getTrip())
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("datedServiceJourney")
           .type(datedServiceJourneyType)
           .dataFetcher(environment ->
-            GqlUtil
-              .getTransitService(environment)
-              .getTripOnServiceDate(
-                new TripIdAndServiceDate(
-                  environment.<TripTimeOnDate>getSource().getTrip().getId(),
-                  environment.<TripTimeOnDate>getSource().getServiceDay()
-                )
+            GqlUtil.getTransitService(environment).getTripOnServiceDate(
+              new TripIdAndServiceDate(
+                environment.<TripTimeOnDate>getSource().getTrip().getId(),
+                environment.<TripTimeOnDate>getSource().getServiceDay()
               )
+            )
           )
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("destinationDisplay")
           .type(destinationDisplayType)
           .dataFetcher(DataFetchingEnvironment::getSource)
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("notices")
           .type(new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(noticeType))))
           .dataFetcher(environment -> {
             TripTimeOnDate tripTimeOnDate = environment.getSource();
-            return GqlUtil
-              .getTransitService(environment)
-              .findNotices(tripTimeOnDate.getStopTimeKey());
+            return GqlUtil.getTransitService(environment).findNotices(
+              tripTimeOnDate.getStopTimeKey()
+            );
           })
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("situations")
           .withDirective(TransmodelDirectives.TIMING_DATA)
           .type(new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(ptSituationElementType))))
@@ -356,8 +329,7 @@ public class EstimatedCallType {
           .build()
       )
       .field(
-        GraphQLFieldDefinition
-          .newFieldDefinition()
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("bookingArrangements")
           .description("Booking arrangements for this EstimatedCall.")
           .type(bookingArrangementType)
@@ -448,9 +420,11 @@ public class EstimatedCallType {
   ) {
     if (alertPatches != null) {
       // First and last period
-      alertPatches.removeIf(alert ->
-        (alert.getEffectiveStartDate() != null && alert.getEffectiveStartDate().isAfter(toTime)) ||
-        (alert.getEffectiveEndDate() != null && alert.getEffectiveEndDate().isBefore(fromTime))
+      alertPatches.removeIf(
+        alert ->
+          (alert.getEffectiveStartDate() != null &&
+            alert.getEffectiveStartDate().isAfter(toTime)) ||
+          (alert.getEffectiveEndDate() != null && alert.getEffectiveEndDate().isBefore(fromTime))
       );
 
       // Handle repeating validityPeriods

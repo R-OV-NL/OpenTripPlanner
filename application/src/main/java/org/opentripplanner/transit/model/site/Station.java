@@ -55,8 +55,10 @@ public class Station
     } catch (NullPointerException e) {
       throw new NullPointerException("Coordinate is null");
     }
-    this.priority =
-      Objects.requireNonNullElse(builder.getPriority(), StopTransferPriority.defaultValue());
+    this.priority = Objects.requireNonNullElse(
+      builder.getPriority(),
+      StopTransferPriority.defaultValue()
+    );
     this.transfersNotAllowed = builder.isTransfersNotAllowed();
 
     // Optional fields

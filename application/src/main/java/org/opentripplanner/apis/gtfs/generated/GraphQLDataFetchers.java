@@ -58,6 +58,7 @@ import org.opentripplanner.service.vehicleparking.model.VehicleParking;
 import org.opentripplanner.service.vehicleparking.model.VehicleParkingSpaces;
 import org.opentripplanner.service.vehicleparking.model.VehicleParkingState;
 import org.opentripplanner.service.vehiclerental.model.RentalVehicleEntityCounts;
+import org.opentripplanner.service.vehiclerental.model.RentalVehicleFuel;
 import org.opentripplanner.service.vehiclerental.model.RentalVehicleType;
 import org.opentripplanner.service.vehiclerental.model.RentalVehicleTypeCount;
 import org.opentripplanner.service.vehiclerental.model.VehicleRentalPlace;
@@ -390,6 +391,19 @@ public class GraphQLDataFetchers {
 
   public interface GraphQLEmissions {
     public DataFetcher<org.opentripplanner.framework.model.Grams> co2();
+  }
+
+  /** Station entrance or exit, originating from OSM or GTFS data. */
+  public interface GraphQLEntrance {
+    public DataFetcher<String> entranceId();
+
+    public DataFetcher<String> name();
+
+    public DataFetcher<String> publicCode();
+
+    public DataFetcher<
+      org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLWheelchairBoarding
+    > wheelchairAccessible();
   }
 
   /** Real-time estimates for an arrival or departure at a certain place. */
@@ -838,9 +852,13 @@ public class GraphQLDataFetchers {
 
     public DataFetcher<Iterable<TripPattern>> patterns();
 
-    public DataFetcher<graphql.execution.DataFetcherResult<org.opentripplanner.routing.api.response.RoutingResponse>> plan();
+    public DataFetcher<
+      graphql.execution.DataFetcherResult<org.opentripplanner.routing.api.response.RoutingResponse>
+    > plan();
 
-    public DataFetcher<graphql.execution.DataFetcherResult<org.opentripplanner.routing.api.response.RoutingResponse>> planConnection();
+    public DataFetcher<
+      graphql.execution.DataFetcherResult<org.opentripplanner.routing.api.response.RoutingResponse>
+    > planConnection();
 
     public DataFetcher<VehicleRentalVehicle> rentalVehicle();
 
@@ -897,6 +915,8 @@ public class GraphQLDataFetchers {
   public interface GraphQLRentalVehicle {
     public DataFetcher<Boolean> allowPickupNow();
 
+    public DataFetcher<RentalVehicleFuel> fuel();
+
     public DataFetcher<graphql.relay.Relay.ResolvedGlobalId> id();
 
     public DataFetcher<Double> lat();
@@ -924,10 +944,21 @@ public class GraphQLDataFetchers {
     public DataFetcher<Integer> total();
   }
 
-  public interface GraphQLRentalVehicleType {
-    public DataFetcher<org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLFormFactor> formFactor();
+  /** Rental vehicle fuel represent the current status of the battery or fuel of a rental vehicle */
+  public interface GraphQLRentalVehicleFuel {
+    public DataFetcher<Double> percent();
 
-    public DataFetcher<org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLPropulsionType> propulsionType();
+    public DataFetcher<Integer> range();
+  }
+
+  public interface GraphQLRentalVehicleType {
+    public DataFetcher<
+      org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLFormFactor
+    > formFactor();
+
+    public DataFetcher<
+      org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLPropulsionType
+    > propulsionType();
   }
 
   public interface GraphQLRentalVehicleTypeCount {
@@ -1024,6 +1055,9 @@ public class GraphQLDataFetchers {
     public DataFetcher<GraphQLInputField> inputField();
   }
 
+  /** A feature for a step */
+  public interface GraphQLStepFeature extends TypeResolver {}
+
   /**
    * Stop can represent either a single public transport stop, where passengers can
    * board and/or disembark vehicles, or a station, which contains multiple stops.
@@ -1082,7 +1116,9 @@ public class GraphQLDataFetchers {
 
     public DataFetcher<Integer> vehicleType();
 
-    public DataFetcher<org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLWheelchairBoarding> wheelchairBoarding();
+    public DataFetcher<
+      org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLWheelchairBoarding
+    > wheelchairBoarding();
 
     public DataFetcher<String> zoneId();
   }
@@ -1255,11 +1291,13 @@ public class GraphQLDataFetchers {
 
     public DataFetcher<String> tripShortName();
 
+    public DataFetcher<
+      org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLWheelchairBoarding
+    > wheelchairAccessible();
+
     public DataFetcher<String> tripLongName();
 
     public DataFetcher<String> realtimeTripId();
-
-    public DataFetcher<org.opentripplanner.apis.gtfs.generated.GraphQLTypes.GraphQLWheelchairBoarding> wheelchairAccessible();
   }
 
   /**
@@ -1361,6 +1399,8 @@ public class GraphQLDataFetchers {
     public DataFetcher<Double> heading();
 
     public DataFetcher<String> label();
+
+    public DataFetcher<java.time.OffsetDateTime> lastUpdate();
 
     public DataFetcher<Long> lastUpdated();
 
@@ -1525,9 +1565,13 @@ public class GraphQLDataFetchers {
 
     public DataFetcher<Double> distance();
 
-    public DataFetcher<Iterable<org.opentripplanner.model.plan.ElevationProfile.Step>> elevationProfile();
+    public DataFetcher<
+      Iterable<org.opentripplanner.model.plan.ElevationProfile.Step>
+    > elevationProfile();
 
     public DataFetcher<String> exit();
+
+    public DataFetcher<Object> feature();
 
     public DataFetcher<Double> lat();
 
