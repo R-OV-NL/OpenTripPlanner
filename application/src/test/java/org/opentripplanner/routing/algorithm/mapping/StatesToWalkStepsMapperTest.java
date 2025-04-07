@@ -13,6 +13,7 @@ import org.opentripplanner.model.plan.RelativeDirection;
 import org.opentripplanner.model.plan.WalkStep;
 import org.opentripplanner.routing.services.notes.StreetNotesService;
 import org.opentripplanner.street.search.state.TestStateBuilder;
+import org.opentripplanner.transit.model.framework.FeedScopedId;
 
 class StatesToWalkStepsMapperTest {
 
@@ -34,27 +35,42 @@ class StatesToWalkStepsMapperTest {
   }
 
   @Test
+  void stationEntrance() {
+    var walkSteps = buildWalkSteps(
+      TestStateBuilder.ofWalking()
+        .streetEdge("name", 1)
+        .entrance("name")
+        .streetEdge()
+        .areaEdge("name", 10)
+    );
+    assertEquals(3, walkSteps.size());
+    assertEquals(RelativeDirection.DEPART, walkSteps.get(0).getRelativeDirection());
+    assertEquals(RelativeDirection.ENTER_OR_EXIT_STATION, walkSteps.get(1).getRelativeDirection());
+    assertEquals(RelativeDirection.CONTINUE, walkSteps.get(2).getRelativeDirection());
+  }
+
+  @Test
   void enterStation() {
-    final TestStateBuilder builder = TestStateBuilder
-      .ofWalking()
+    final TestStateBuilder builder = TestStateBuilder.ofWalking()
       .streetEdge()
       .enterStation("Lichterfelde-Ost");
     var walkSteps = buildWalkSteps(builder);
     assertEquals(2, walkSteps.size());
     var enter = walkSteps.get(1);
+    assertEquals(new FeedScopedId("F", "Lichterfelde-Ost"), enter.entrance().get().getId());
     assertEquals(ENTER_STATION, enter.getRelativeDirection());
   }
 
   @Test
   void exitStation() {
-    final TestStateBuilder builder = TestStateBuilder
-      .ofWalking()
+    final TestStateBuilder builder = TestStateBuilder.ofWalking()
       .streetEdge()
       .exitStation("Lichterfelde-Ost");
     var walkSteps = buildWalkSteps(builder);
     assertEquals(3, walkSteps.size());
-    var enter = walkSteps.get(2);
-    assertEquals(EXIT_STATION, enter.getRelativeDirection());
+    var exit = walkSteps.get(2);
+    assertEquals(new FeedScopedId("F", "Lichterfelde-Ost"), exit.entrance().get().getId());
+    assertEquals(EXIT_STATION, exit.getRelativeDirection());
   }
 
   @Test

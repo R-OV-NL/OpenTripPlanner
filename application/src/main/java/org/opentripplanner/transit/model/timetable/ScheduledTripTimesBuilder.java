@@ -148,8 +148,10 @@ public class ScheduledTripTimesBuilder {
   }
 
   public ScheduledTripTimesBuilder withDropOffBookingInfos(List<BookingInfo> dropOffBookingInfos) {
-    this.dropOffBookingInfos =
-      deduplicator.deduplicateImmutableList(BookingInfo.class, dropOffBookingInfos);
+    this.dropOffBookingInfos = deduplicator.deduplicateImmutableList(
+      BookingInfo.class,
+      dropOffBookingInfos
+    );
     return this;
   }
 
@@ -158,8 +160,10 @@ public class ScheduledTripTimesBuilder {
   }
 
   public ScheduledTripTimesBuilder withPickupBookingInfos(List<BookingInfo> pickupBookingInfos) {
-    this.pickupBookingInfos =
-      deduplicator.deduplicateImmutableList(BookingInfo.class, pickupBookingInfos);
+    this.pickupBookingInfos = deduplicator.deduplicateImmutableList(
+      BookingInfo.class,
+      pickupBookingInfos
+    );
     return this;
   }
 

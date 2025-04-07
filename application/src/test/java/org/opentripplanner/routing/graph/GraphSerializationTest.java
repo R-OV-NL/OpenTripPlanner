@@ -23,6 +23,8 @@ import org.opentripplanner.datastore.file.FileDataSource;
 import org.opentripplanner.ext.emissions.EmissionsDataModel;
 import org.opentripplanner.framework.geometry.HashGridSpatialIndex;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueSummary;
+import org.opentripplanner.service.osminfo.OsmInfoGraphBuildRepository;
+import org.opentripplanner.service.osminfo.internal.DefaultOsmInfoGraphBuildRepository;
 import org.opentripplanner.service.vehicleparking.VehicleParkingRepository;
 import org.opentripplanner.service.vehicleparking.internal.DefaultVehicleParkingRepository;
 import org.opentripplanner.service.worldenvelope.WorldEnvelopeRepository;
@@ -44,22 +46,20 @@ import org.opentripplanner.transit.service.TimetableRepository;
  */
 public class GraphSerializationTest {
 
-  static Class<?>[] IGNORED_CLASSES = Set
-    .of(
-      // Skip AtomicInteger, it does not implement equals/hashCode
-      AtomicInteger.class,
-      ThreadPoolExecutor.class,
-      WeakValueHashMap.class,
-      Method.class,
-      JarFile.class,
-      SoftReference.class,
-      Class.class,
-      org.slf4j.Logger.class,
-      ch.qos.logback.classic.Logger.class,
-      HashGridSpatialIndex.class,
-      Deduplicator.class
-    )
-    .toArray(Class[]::new);
+  static Class<?>[] IGNORED_CLASSES = Set.of(
+    // Skip AtomicInteger, it does not implement equals/hashCode
+    AtomicInteger.class,
+    ThreadPoolExecutor.class,
+    WeakValueHashMap.class,
+    Method.class,
+    JarFile.class,
+    SoftReference.class,
+    Class.class,
+    org.slf4j.Logger.class,
+    ch.qos.logback.classic.Logger.class,
+    HashGridSpatialIndex.class,
+    Deduplicator.class
+  ).toArray(Class[]::new);
 
   /**
    * Tests GTFS based graph serialization to file.
@@ -67,11 +67,13 @@ public class GraphSerializationTest {
   @Test
   public void testRoundTripSerializationForGTFSGraph() throws Exception {
     TestOtpModel model = ConstantsForTests.buildNewPortlandGraph(true);
+    var osmGraphBuildRepository = new DefaultOsmInfoGraphBuildRepository();
     var weRepo = new DefaultWorldEnvelopeRepository();
     var emissionsDataModel = new EmissionsDataModel();
     var parkingRepository = new DefaultVehicleParkingRepository();
     testRoundTrip(
       model.graph(),
+      osmGraphBuildRepository,
       model.timetableRepository(),
       weRepo,
       parkingRepository,
@@ -85,11 +87,13 @@ public class GraphSerializationTest {
   @Test
   public void testRoundTripSerializationForNetexGraph() throws Exception {
     TestOtpModel model = ConstantsForTests.buildNewMinimalNetexGraph();
+    var osmGraphBuildRepository = new DefaultOsmInfoGraphBuildRepository();
     var worldEnvelopeRepository = new DefaultWorldEnvelopeRepository();
     var emissionsDataModel = new EmissionsDataModel();
     var parkingRepository = new DefaultVehicleParkingRepository();
     testRoundTrip(
       model.graph(),
+      osmGraphBuildRepository,
       model.timetableRepository(),
       worldEnvelopeRepository,
       parkingRepository,
@@ -118,8 +122,7 @@ public class GraphSerializationTest {
    */
   @Test
   public void compareGraphToItself() {
-    TestOtpModel cachedPortlandGraph = ConstantsForTests
-      .getInstance()
+    TestOtpModel cachedPortlandGraph = ConstantsForTests.getInstance()
       .getCachedPortlandGraph()
       .index();
     Graph originalGraph = cachedPortlandGraph.graph();
@@ -166,8 +169,8 @@ public class GraphSerializationTest {
       "outgoing",
       "buildTime",
       "tripPatternForId",
-      "transitLayer",
-      "realtimeTransitLayer",
+      "raptorTransitData",
+      "realtimeRaptorTransitData",
       "dateTime",
       "notesForEdge",
       "uniqueMatchers"
@@ -191,6 +194,7 @@ public class GraphSerializationTest {
    */
   private void testRoundTrip(
     Graph originalGraph,
+    OsmInfoGraphBuildRepository osmInfoGraphBuildRepository,
     TimetableRepository originalTimetableRepository,
     WorldEnvelopeRepository worldEnvelopeRepository,
     VehicleParkingRepository vehicleParkingRepository,
@@ -202,6 +206,7 @@ public class GraphSerializationTest {
     streetLimitationParameters.initMaxCarSpeed(40);
     SerializedGraphObject serializedObj = new SerializedGraphObject(
       originalGraph,
+      osmInfoGraphBuildRepository,
       originalTimetableRepository,
       worldEnvelopeRepository,
       vehicleParkingRepository,
