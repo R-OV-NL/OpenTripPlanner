@@ -63,9 +63,10 @@ public class RentalVehicleType {
         GraphQLFieldDefinition.newFieldDefinition()
           .name("currentRangeMeters")
           .type(Scalars.GraphQLFloat)
-          .dataFetcher(environment ->
-            ((VehicleRentalVehicle) environment.getSource()).getFuel().range()
-          )
+          .dataFetcher(environment -> {
+            var fuel = ((VehicleRentalVehicle) environment.getSource()).getFuel();
+            return fuel != null && fuel.range() != null ? fuel.range().toMeters() : null;
+          })
           .build()
       )
       .build();
