@@ -204,8 +204,9 @@ public class GtfsRealTimeTripUpdateAdapter {
       boolean couldTripHaveStartedYesterday = false;
       if (tripDescriptor.hasStartTime()) {
         try {
-          couldTripHaveStartedYesterday =
-            ServiceDateUtils.serviceStartTimeIsBefore4Am(tripDescriptor.getStartTime());
+          couldTripHaveStartedYesterday = ServiceDateUtils.serviceStartTimeIsBefore4Am(
+            tripDescriptor.getStartTime()
+          );
         } catch (final ParseException e) {
           debug(
             tripId,
@@ -253,34 +254,29 @@ public class GtfsRealTimeTripUpdateAdapter {
             tripId,
             serviceDate,
             serviceDateYesterday,
-              couldTripHaveStartedYesterday,
-              backwardsDelayPropagationType
-            );
-            case ADDED -> validateAndHandleAddedTrip(
-              tripUpdate,
-              tripDescriptor,
-              tripId,
-              serviceDate
-            );
-            case CANCELED -> handleCanceledTrip(
-              tripId,
-              serviceDate,
-              CancelationType.CANCEL,
-              updateIncrementality
-            );
-            case DELETED -> handleCanceledTrip(
-              tripId,
-              serviceDate,
-              CancelationType.DELETE,
-              updateIncrementality
-            );
-            case REPLACEMENT -> validateAndHandleModifiedTrip(
-              tripUpdate,
-              tripDescriptor,
-              tripId,
-              serviceDate,
-              serviceDateYesterday,
-              couldTripHaveStartedYesterday
+            couldTripHaveStartedYesterday,
+            backwardsDelayPropagationType
+          );
+          case ADDED -> validateAndHandleAddedTrip(tripUpdate, tripDescriptor, tripId, serviceDate);
+          case CANCELED -> handleCanceledTrip(
+            tripId,
+            serviceDate,
+            CancelationType.CANCEL,
+            updateIncrementality
+          );
+          case DELETED -> handleCanceledTrip(
+            tripId,
+            serviceDate,
+            CancelationType.DELETE,
+            updateIncrementality
+          );
+          case REPLACEMENT -> validateAndHandleModifiedTrip(
+            tripUpdate,
+            tripDescriptor,
+            tripId,
+            serviceDate,
+            serviceDateYesterday,
+            couldTripHaveStartedYesterday
           );
           case UNSCHEDULED -> UpdateError.result(tripId, NOT_IMPLEMENTED_UNSCHEDULED);
           case DUPLICATED -> UpdateError.result(tripId, NOT_IMPLEMENTED_DUPLICATED);
@@ -1008,17 +1004,23 @@ public class GtfsRealTimeTripUpdateAdapter {
       newTripTimes.updateDepartureDelay(stopIndex, departureDelay);
 
       String plannedPlatform = stopTimeUpdates
-          .get(stopIndex)
-          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-          .getScheduledTrack();
+        .get(stopIndex)
+        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+        .getScheduledTrack();
 
       String actualPlatform = stopTimeUpdates
-          .get(stopIndex)
-          .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
-          .getActualTrack();
+        .get(stopIndex)
+        .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
+        .getActualTrack();
 
-      if(!plannedPlatform.equals(actualPlatform)) {
-        debug(trip.getId(), serviceDate, "Planned platform {} and actual platform {} are not equal", plannedPlatform, actualPlatform);
+      if (!plannedPlatform.equals(actualPlatform)) {
+        debug(
+          trip.getId(),
+          serviceDate,
+          "Planned platform {} and actual platform {} are not equal",
+          plannedPlatform,
+          actualPlatform
+        );
       }
 
       if (!plannedPlatform.isBlank()) newTripTimes.setScheduledPlatform(stopIndex, plannedPlatform);

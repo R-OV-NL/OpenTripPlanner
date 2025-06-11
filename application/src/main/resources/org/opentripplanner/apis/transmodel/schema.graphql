@@ -205,6 +205,8 @@ type EstimatedCall {
   actualArrivalTime: DateTime
   "Actual time of departure from quay. Updated with real time information if available."
   actualDepartureTime: DateTime
+  "Aimed (scheduled) platform for this call."
+  actualPlatform: String
   "Scheduled time of arrival at quay. Not affected by read time updated"
   aimedArrivalTime: DateTime!
   "Scheduled time of departure from quay. Not affected by read time updated"
@@ -221,6 +223,8 @@ type EstimatedCall {
   expectedArrivalTime: DateTime!
   "Expected time of departure from quay. Updated with real time information if available. Will be null if an actualDepartureTime exists"
   expectedDepartureTime: DateTime!
+  "Expected platform for this call."
+  expectedPlatform: String
   "Whether vehicle may be alighted at quay."
   forAlighting: Boolean!
   "Whether vehicle may be boarded at quay."
