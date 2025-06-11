@@ -4,6 +4,6 @@
   "dataImportReport": true,
   "maxTransferDuration": "PT20M",
   "platformEntriesLinking": true,
-  "staticBikeParkAndRide": false,
-  "staticParkAndRide": false
+  "staticBikeParkAndRide": true,
+  "staticParkAndRide": true
 }
