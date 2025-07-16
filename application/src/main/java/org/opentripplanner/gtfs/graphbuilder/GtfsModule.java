@@ -16,19 +16,13 @@ import org.onebusaway.csv_entities.schema.DefaultEntitySchemaFactory;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.Agency;
 import org.onebusaway.gtfs.model.Area;
-import org.onebusaway.gtfs.model.FareAttribute;
 import org.onebusaway.gtfs.model.FareLegRule;
 import org.onebusaway.gtfs.model.FareMedium;
 import org.onebusaway.gtfs.model.FareProduct;
 import org.onebusaway.gtfs.model.FareTransferRule;
 import org.onebusaway.gtfs.model.IdentityBean;
-import org.onebusaway.gtfs.model.Pathway;
 import org.onebusaway.gtfs.model.RiderCategory;
 import org.onebusaway.gtfs.model.Route;
-import org.onebusaway.gtfs.model.ServiceCalendar;
-import org.onebusaway.gtfs.model.ServiceCalendarDate;
-import org.onebusaway.gtfs.model.ShapePoint;
-import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopAreaElement;
 import org.onebusaway.gtfs.model.Trip;
 import org.onebusaway.gtfs.serialization.GtfsEntitySchemaFactory;
@@ -41,7 +35,6 @@ import org.opentripplanner.framework.application.OTPFeature;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
 import org.opentripplanner.graph_builder.model.GraphBuilderModule;
 import org.opentripplanner.graph_builder.module.AddTransitEntitiesToGraph;
-import org.opentripplanner.graph_builder.module.GtfsFeedId;
 import org.opentripplanner.graph_builder.module.ValidateAndInterpolateStopTimesForEachTrip;
 import org.opentripplanner.graph_builder.module.geometry.GeometryProcessor;
 import org.opentripplanner.gtfs.GenerateTripPatternsOperation;
@@ -90,13 +83,18 @@ public class GtfsModule implements GraphBuilderModule {
   private final DataImportIssueStore issueStore;
   private int nextAgencyId = 1; // used for generating agency IDs to resolve ID conflicts
 
+  private final double maxStopToShapeSnapDistance;
+  private final int subwayAccessTime_s;
+
   public GtfsModule(
     List<GtfsBundle> bundles,
     TimetableRepository timetableRepository,
     Graph graph,
     DataImportIssueStore issueStore,
     ServiceDateInterval transitPeriodLimit,
-    FareServiceFactory fareServiceFactory
+    FareServiceFactory fareServiceFactory,
+    double maxStopToShapeSnapDistance,
+    int subwayAccessTime_s
   ) {
     this.gtfsBundles = bundles;
     this.timetableRepository = timetableRepository;
@@ -104,21 +102,28 @@ public class GtfsModule implements GraphBuilderModule {
     this.issueStore = issueStore;
     this.transitPeriodLimit = transitPeriodLimit;
     this.fareServiceFactory = fareServiceFactory;
+    this.maxStopToShapeSnapDistance = maxStopToShapeSnapDistance;
+    this.subwayAccessTime_s = subwayAccessTime_s;
   }
 
-  public GtfsModule(
+  /**
+   * Create a new instance for unit-testing.
+   */
+  public static GtfsModule forTest(
     List<GtfsBundle> bundles,
     TimetableRepository timetableRepository,
     Graph graph,
     ServiceDateInterval transitPeriodLimit
   ) {
-    this(
+    return new GtfsModule(
       bundles,
       timetableRepository,
       graph,
       DataImportIssueStore.NOOP,
       transitPeriodLimit,
-      new DefaultFareServiceFactory()
+      new DefaultFareServiceFactory(),
+      150.0,
+      120
     );
   }
 
@@ -134,7 +139,7 @@ public class GtfsModule implements GraphBuilderModule {
       for (GtfsBundle gtfsBundle : gtfsBundles) {
         GtfsMutableRelationalDao gtfsDao = loadBundle(gtfsBundle);
 
-        final String feedId = gtfsBundle.getFeedId().getId();
+        final String feedId = gtfsBundle.getFeedId();
         verifyUniqueFeedId(gtfsBundle, feedIdsEncountered, feedId);
 
         feedIdsEncountered.put(feedId, gtfsBundle);
@@ -143,14 +148,14 @@ public class GtfsModule implements GraphBuilderModule {
           new OtpTransitServiceBuilder(timetableRepository.getSiteRepository(), issueStore),
           feedId,
           issueStore,
-          gtfsBundle.discardMinTransferTimes(),
+          gtfsBundle.parameters().discardMinTransferTimes(),
           gtfsDao,
-          gtfsBundle.stationTransferPreference()
+          gtfsBundle.parameters().stationTransferPreference()
         );
         mapper.mapStopTripAndRouteDataIntoBuilder();
 
         OtpTransitServiceBuilder builder = mapper.getBuilder();
-        var fareRulesService = mapper.getFareRulesService();
+        var fareRulesData = mapper.fareRulesData();
 
         builder.limitServiceDays(transitPeriodLimit);
 
@@ -163,7 +168,7 @@ public class GtfsModule implements GraphBuilderModule {
         validateAndInterpolateStopTimesForEachTrip(
           builder.getStopTimesSortedByTrip(),
           issueStore,
-          gtfsBundle.removeRepeatedStops()
+          gtfsBundle.parameters().removeRepeatedStops()
         );
 
         // We need to run this after the cleaning of the data, as stop indices might have changed
@@ -171,7 +176,7 @@ public class GtfsModule implements GraphBuilderModule {
 
         GeometryProcessor geometryProcessor = new GeometryProcessor(
           builder,
-          gtfsBundle.getMaxStopToShapeSnapDistance(),
+          maxStopToShapeSnapDistance,
           issueStore
         );
 
@@ -190,20 +195,19 @@ public class GtfsModule implements GraphBuilderModule {
         // if this or previously processed gtfs bundle has transit that has not been filtered out
         hasTransit = hasTransit || otpTransitService.hasActiveTransit();
 
-        addTimetableRepositoryToGraph(graph, timetableRepository, gtfsBundle, otpTransitService);
+        addTimetableRepositoryToGraph(graph, timetableRepository, otpTransitService);
 
-        if (gtfsBundle.blockBasedInterlining()) {
+        if (gtfsBundle.parameters().blockBasedInterlining()) {
           new InterlineProcessor(
             timetableRepository.getTransferService(),
             builder.getStaySeatedNotAllowed(),
-            gtfsBundle.maxInterlineDistance(),
+            gtfsBundle.parameters().maxInterlineDistance(),
             issueStore,
             calendarServiceData
           ).run(otpTransitService.getTripPatterns());
         }
 
-        fareServiceFactory.processGtfs(fareRulesService, otpTransitService);
-        graph.setFareService(fareServiceFactory.makeFareService());
+        fareServiceFactory.processGtfs(fareRulesData, otpTransitService);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -299,12 +303,11 @@ public class GtfsModule implements GraphBuilderModule {
   private void addTimetableRepositoryToGraph(
     Graph graph,
     TimetableRepository timetableRepository,
-    GtfsBundle gtfsBundle,
     OtpTransitService otpTransitService
   ) {
     AddTransitEntitiesToGraph.addToGraph(
       otpTransitService,
-      gtfsBundle.subwayAccessTime,
+      subwayAccessTime_s,
       graph,
       timetableRepository
     );
@@ -313,9 +316,9 @@ public class GtfsModule implements GraphBuilderModule {
   private GtfsMutableRelationalDao loadBundle(GtfsBundle gtfsBundle) throws IOException {
     StoreImpl store = new StoreImpl(new GtfsRelationalDaoImpl());
     store.open();
-    LOG.info("reading {}", gtfsBundle);
+    LOG.info("reading {}", gtfsBundle.feedInfo());
 
-    GtfsFeedId gtfsFeedId = gtfsBundle.getFeedId();
+    String gtfsFeedId = gtfsBundle.getFeedId();
 
     DefaultEntitySchemaFactory factory = GtfsEntitySchemaFactory.createEntitySchemaFactory();
     factory.addExtension(Trip.class, TripExtension.class);
@@ -325,7 +328,7 @@ public class GtfsModule implements GraphBuilderModule {
     reader.setInputSource(gtfsBundle.getCsvInputSource());
     reader.setEntityStore(store);
     reader.setInternStrings(true);
-    reader.setDefaultAgencyId(gtfsFeedId.getId());
+    reader.setDefaultAgencyId(gtfsFeedId);
 
     if (LOG.isDebugEnabled()) reader.addEntityHandler(counter);
 
@@ -343,10 +346,9 @@ public class GtfsModule implements GraphBuilderModule {
       if (entityClass == Agency.class) {
         for (Agency agency : reader.getAgencies()) {
           String agencyId = agency.getId();
-          LOG.info("This Agency has the ID {}", agencyId);
           // Somehow, when the agency's id field is missing, OBA replaces it with the agency's name.
           // TODO Figure out how and why this is happening.
-          if (agencyId == null || agencyIdsSeen.contains(gtfsFeedId.getId() + agencyId)) {
+          if (agencyId == null || agencyIdsSeen.contains(gtfsFeedId + agencyId)) {
             // Loop in case generated name is already in use.
             String generatedAgencyId = null;
             while (generatedAgencyId == null || agencyIdsSeen.contains(generatedAgencyId)) {
@@ -362,54 +364,9 @@ public class GtfsModule implements GraphBuilderModule {
             agency.setId(generatedAgencyId);
             agencyId = generatedAgencyId;
           }
-          if (agencyId != null) agencyIdsSeen.add(gtfsFeedId.getId() + agencyId);
+          if (agencyId != null) agencyIdsSeen.add(gtfsFeedId + agencyId);
         }
       }
-    }
-
-    for (ShapePoint shapePoint : store.getAllEntitiesForType(ShapePoint.class)) {
-      shapePoint.getShapeId().setAgencyId(reader.getDefaultAgencyId());
-    }
-    for (Route route : store.getAllEntitiesForType(Route.class)) {
-      route.getId().setAgencyId(reader.getDefaultAgencyId());
-      generateRouteColor(route);
-    }
-    for (Stop stop : store.getAllEntitiesForType(Stop.class)) {
-      stop.getId().setAgencyId(reader.getDefaultAgencyId());
-    }
-    for (Trip trip : store.getAllEntitiesForType(Trip.class)) {
-      trip.getId().setAgencyId(reader.getDefaultAgencyId());
-    }
-    for (ServiceCalendar serviceCalendar : store.getAllEntitiesForType(ServiceCalendar.class)) {
-      serviceCalendar.getServiceId().setAgencyId(reader.getDefaultAgencyId());
-    }
-    for (ServiceCalendarDate serviceCalendarDate : store.getAllEntitiesForType(
-      ServiceCalendarDate.class
-    )) {
-      serviceCalendarDate.getServiceId().setAgencyId(reader.getDefaultAgencyId());
-    }
-    for (FareAttribute fareAttribute : store.getAllEntitiesForType(FareAttribute.class)) {
-      fareAttribute.getId().setAgencyId(reader.getDefaultAgencyId());
-    }
-    for (var fareProduct : store.getAllEntitiesForType(FareProduct.class)) {
-      fareProduct.getId().setAgencyId(reader.getDefaultAgencyId());
-    }
-    for (var transferRule : store.getAllEntitiesForType(FareTransferRule.class)) {
-      if (transferRule.getFareProductId() != null) {
-        transferRule.getFareProductId().setAgencyId(reader.getDefaultAgencyId());
-      }
-      if (transferRule.getFromLegGroupId() != null) {
-        transferRule.getFromLegGroupId().setAgencyId(reader.getDefaultAgencyId());
-      }
-      if (transferRule.getToLegGroupId() != null) {
-        transferRule.getToLegGroupId().setAgencyId(reader.getDefaultAgencyId());
-      }
-    }
-    for (var transferRule : store.getAllEntitiesForType(FareLegRule.class)) {
-      transferRule.getFareProductId().setAgencyId(reader.getDefaultAgencyId());
-    }
-    for (Pathway pathway : store.getAllEntitiesForType(Pathway.class)) {
-      pathway.getId().setAgencyId(reader.getDefaultAgencyId());
     }
 
     store.close();

@@ -9,7 +9,7 @@ import org.opentripplanner.GtfsTest;
 import org.opentripplanner.framework.model.Cost;
 import org.opentripplanner.model.plan.Itinerary;
 import org.opentripplanner.model.plan.Leg;
-import org.opentripplanner.model.plan.ScheduledTransitLeg;
+import org.opentripplanner.model.plan.leg.ScheduledTransitLeg;
 import org.opentripplanner.model.plan.legreference.ScheduledTransitLegReference;
 import org.opentripplanner.routing.alternativelegs.AlternativeLegs;
 import org.opentripplanner.routing.alternativelegs.AlternativeLegsFilter;
@@ -23,7 +23,6 @@ import org.opentripplanner.transit.service.DefaultTransitService;
  */
 class AlternativeLegsTest extends GtfsTest {
 
-  private static final String FEED_ID = "FEED";
   private static final FeedScopedId STOP_ID_B = new FeedScopedId(FEED_ID, "B");
   private static final FeedScopedId STOP_ID_C = new FeedScopedId(FEED_ID, "C");
   private static final FeedScopedId STOP_ID_X = new FeedScopedId(FEED_ID, "X");
@@ -39,7 +38,7 @@ class AlternativeLegsTest extends GtfsTest {
     var transitService = new DefaultTransitService(timetableRepository);
 
     var originalLeg = new ScheduledTransitLegReference(
-      new FeedScopedId(this.feedId.getId(), "1.2"),
+      new FeedScopedId(FEED_ID, "1.2"),
       LocalDate.parse("2022-04-02"),
       1,
       2,
@@ -72,7 +71,7 @@ class AlternativeLegsTest extends GtfsTest {
     var transitService = new DefaultTransitService(timetableRepository);
 
     var originalLeg = new ScheduledTransitLegReference(
-      new FeedScopedId(this.feedId.getId(), "2.2"),
+      new FeedScopedId(FEED_ID, "2.2"),
       LocalDate.parse("2022-04-02"),
       0,
       1,
@@ -105,7 +104,7 @@ class AlternativeLegsTest extends GtfsTest {
     var transitService = new DefaultTransitService(timetableRepository);
 
     var originalLeg = new ScheduledTransitLegReference(
-      new FeedScopedId(this.feedId.getId(), "19.1"),
+      new FeedScopedId(FEED_ID, "19.1"),
       LocalDate.parse("2022-04-02"),
       1,
       2,
@@ -132,7 +131,7 @@ class AlternativeLegsTest extends GtfsTest {
     var transitService = new DefaultTransitService(timetableRepository);
 
     var originalLeg = new ScheduledTransitLegReference(
-      new FeedScopedId(this.feedId.getId(), "19.1"),
+      new FeedScopedId(FEED_ID, "19.1"),
       LocalDate.parse("2022-04-02"),
       1,
       7,
