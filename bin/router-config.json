@@ -37,23 +37,17 @@
       "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_den_haag/gbfs.json"
     },
     {
-	"type": "vehicle-rental",
-	"sourceType": "gbfs",
-	"frequency": "PT1M",
-	"network": "dott-eindhoven",
-	"url": "https://gbfs.api.ridedott.com/public/v2/eindhoven/gbfs.json"
+      "type": "vehicle-rental",
+      "sourceType": "gbfs",
+      "frequency": "PT1M",
+      "network": "dott-eindhoven",
+      "url": "https://gbfs.api.ridedott.com/public/v2/eindhoven/gbfs.json",
+      "geofencingZones": true
     },
     {
       "type": "vehicle-rental",
       "sourceType": "gbfs",
-      "frequency": "PT1H",
-      "network": "twentsflex-nl",
-      "url": "https://gbfs.openov.nl/twentsflex/nl/gbfs.json"
-    },
-    {
-      "type": "vehicle-rental",
-      "sourceType": "gbfs",
-      "frequency": "PT1H",
+      "frequency": "PT1M",
       "network": "ovfiets",
       "url": "https://gbfs.openov.nl/ovfiets/gbfs.json",
       "allowKeepingRentedVehicleAtDestination": true

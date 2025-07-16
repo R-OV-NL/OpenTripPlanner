@@ -60,3 +60,4 @@ graph.obj
 **/streetGraph.obj
 **/graph.obj
 **/bin/*.jar
+/bin/build-report/

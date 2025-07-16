@@ -416,6 +416,16 @@ public class TripQuery {
       )
       .argument(
         GraphQLArgument.newArgument()
+          .name("allowKeepingRentedBicycleAtDestination")
+          .description(
+            "Whether to allow arriving at the destination with a rented bicycle without dropping it off. This is useful for round trips or when the destination is an intermediate place."
+          )
+          .type(Scalars.GraphQLBoolean)
+          .defaultValue(preferences.bike().rental().allowArrivingInRentedVehicleAtDestination())
+          .build()
+      )
+      .argument(
+        GraphQLArgument.newArgument()
           .name("transferPenalty")
           .description(
             "An extra penalty added on transfers (i.e. all boardings except the first one). " +
