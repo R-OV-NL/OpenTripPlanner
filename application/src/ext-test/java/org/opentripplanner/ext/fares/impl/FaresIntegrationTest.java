@@ -18,7 +18,6 @@ import org.opentripplanner.model.fare.ItineraryFare;
 import org.opentripplanner.model.plan.Itinerary;
 import org.opentripplanner.routing.api.request.RouteRequest;
 import org.opentripplanner.routing.api.request.preference.ItineraryFilterDebugProfile;
-import org.opentripplanner.routing.api.request.request.filter.AllowAllTransitFilter;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.standalone.api.OtpServerRequestContext;
 import org.opentripplanner.transit.model.basic.Money;
@@ -34,7 +33,11 @@ public class FaresIntegrationTest {
 
     var feedId = timetableRepository.getFeedIds().iterator().next();
 
-    var serverContext = TestServerContext.createServerContext(graph, timetableRepository);
+    var serverContext = TestServerContext.createServerContext(
+      graph,
+      timetableRepository,
+      model.fareServiceFactory().makeFareService()
+    );
 
     var start = LocalDateTime.of(2009, Month.AUGUST, 7, 12, 0, 0)
       .atZone(ZoneIds.LOS_ANGELES)
@@ -55,7 +58,11 @@ public class FaresIntegrationTest {
     TimetableRepository timetableRepository = model.timetableRepository();
     var portlandId = timetableRepository.getFeedIds().iterator().next();
 
-    var serverContext = TestServerContext.createServerContext(graph, timetableRepository);
+    var serverContext = TestServerContext.createServerContext(
+      graph,
+      timetableRepository,
+      model.fareServiceFactory().makeFareService()
+    );
 
     // from zone 3 to zone 2
     var from = GenericLocation.fromStopId(
@@ -124,14 +131,14 @@ public class FaresIntegrationTest {
     Instant time,
     OtpServerRequestContext serverContext
   ) {
-    RouteRequest request = new RouteRequest();
-    request.journey().transit().setFilters(List.of(AllowAllTransitFilter.of()));
-    request.setDateTime(time);
-    request.setFrom(from);
-    request.setTo(to);
-    request.withPreferences(p ->
-      p.withItineraryFilter(it -> it.withDebug(ItineraryFilterDebugProfile.LIST_ALL))
-    );
+    RouteRequest request = RouteRequest.of()
+      .withDateTime(time)
+      .withFrom(from)
+      .withTo(to)
+      .withPreferences(p ->
+        p.withItineraryFilter(it -> it.withDebug(ItineraryFilterDebugProfile.LIST_ALL))
+      )
+      .buildRequest();
 
     var result = serverContext.routingService().route(request);
 

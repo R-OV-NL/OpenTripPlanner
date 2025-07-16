@@ -20,7 +20,6 @@ public enum OTPFeature {
     false,
     "Starts a background thread to continuously publish metrics about alerts. Needs to be enabled together with `ActuactorAPI`."
   ),
-  APIBikeRental(true, false, "Enable the bike rental endpoint."),
   APIServerInfo(true, false, "Enable the server info endpoint."),
   APIUpdaterStatus(true, false, "Enable endpoint for graph updaters status."),
   IncludeEmptyRailStopsInTransfers(
@@ -103,7 +102,7 @@ public enum OTPFeature {
     "Make all polling updaters wait for graph updates to complete before finishing. " +
     "If this is not enabled, the updaters will finish after submitting the task to update the graph."
   ),
-  Co2Emissions(false, true, "Enable the emissions sandbox module."),
+  Emission(false, true, "Enable the emission sandbox module."),
   DataOverlay(
     false,
     true,
@@ -135,7 +134,8 @@ public enum OTPFeature {
     true,
     "Include train Sørlandsbanen in results when searching in south of Norway. Only relevant in Norway."
   ),
-  TransferAnalyzer(false, true, "Analyze transfers during graph build.");
+  TransferAnalyzer(false, true, "Analyze transfers during graph build."),
+  TriasApi(false, true, "TRIAS API.");
 
   private static final Object TEST_LOCK = new Object();
 

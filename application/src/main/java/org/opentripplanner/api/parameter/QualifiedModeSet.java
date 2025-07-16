@@ -83,6 +83,7 @@ public class QualifiedModeSet implements Serializable {
         case BICYCLE -> {
           if (requestMode.qualifiers.contains(Qualifier.RENT)) {
             mBuilder.withAllStreetModes(StreetMode.BIKE_RENTAL);
+            mBuilder.withTransferMode(StreetMode.WALK);
           } else if (requestMode.qualifiers.contains(Qualifier.PARK)) {
             mBuilder.withAccessMode(StreetMode.BIKE_TO_PARK);
             mBuilder.withEgressMode(StreetMode.WALK);
@@ -95,6 +96,7 @@ public class QualifiedModeSet implements Serializable {
         case SCOOTER -> {
           if (requestMode.qualifiers.contains(Qualifier.RENT)) {
             mBuilder.withAllStreetModes(StreetMode.SCOOTER_RENTAL);
+            mBuilder.withTransferMode(StreetMode.WALK);
           } else {
             // Only supported as rental mode
             throw new IllegalArgumentException();
@@ -103,6 +105,7 @@ public class QualifiedModeSet implements Serializable {
         case CAR -> {
           if (requestMode.qualifiers.contains(Qualifier.RENT)) {
             mBuilder.withAllStreetModes(StreetMode.CAR_RENTAL);
+            mBuilder.withTransferMode(StreetMode.WALK);
           } else if (requestMode.qualifiers.contains(Qualifier.PARK)) {
             mBuilder.withAccessMode(StreetMode.CAR_TO_PARK);
             mBuilder.withTransferMode(StreetMode.WALK);

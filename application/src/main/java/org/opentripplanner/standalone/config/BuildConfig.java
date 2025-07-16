@@ -21,7 +21,9 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.opentripplanner.datastore.api.OtpDataStoreConfig;
 import org.opentripplanner.ext.dataoverlay.configuration.DataOverlayConfig;
-import org.opentripplanner.ext.emissions.EmissionsConfig;
+import org.opentripplanner.ext.datastore.gs.config.GsConfig;
+import org.opentripplanner.ext.emission.config.EmissionConfig;
+import org.opentripplanner.ext.emission.parameters.EmissionParameters;
 import org.opentripplanner.ext.fares.FaresConfiguration;
 import org.opentripplanner.framework.geometry.CompactElevationProfile;
 import org.opentripplanner.graph_builder.module.TransferParameters;
@@ -30,13 +32,11 @@ import org.opentripplanner.graph_builder.module.ned.parameter.DemExtractParamete
 import org.opentripplanner.graph_builder.module.osm.parameters.OsmExtractParameters;
 import org.opentripplanner.graph_builder.module.osm.parameters.OsmExtractParametersList;
 import org.opentripplanner.graph_builder.services.osm.EdgeNamer;
-import org.opentripplanner.gtfs.graphbuilder.GtfsFeedParameters;
+import org.opentripplanner.gtfs.config.GtfsDefaultParameters;
 import org.opentripplanner.model.calendar.ServiceDateInterval;
 import org.opentripplanner.netex.config.NetexFeedParameters;
 import org.opentripplanner.routing.api.request.RouteRequest;
 import org.opentripplanner.routing.api.request.StreetMode;
-import org.opentripplanner.routing.api.request.framework.DurationForEnum;
-import org.opentripplanner.routing.fares.FareServiceFactory;
 import org.opentripplanner.standalone.config.buildconfig.DemConfig;
 import org.opentripplanner.standalone.config.buildconfig.GtfsConfig;
 import org.opentripplanner.standalone.config.buildconfig.IslandPruningConfig;
@@ -128,7 +128,7 @@ public class BuildConfig implements OtpDataStoreConfig {
   /**
    * A specific fares service to use.
    */
-  public final FareServiceFactory fareServiceFactory;
+  public final JsonNode fareConfig;
 
   private final Pattern netexLocalFilePattern;
 
@@ -137,8 +137,6 @@ public class BuildConfig implements OtpDataStoreConfig {
   private final Pattern osmLocalFilePattern;
 
   private final Pattern demLocalFilePattern;
-
-  private final String gsCredentials;
 
   private final URI streetGraph;
 
@@ -159,7 +157,7 @@ public class BuildConfig implements OtpDataStoreConfig {
   public final Duration maxTransferDuration;
   public final Map<StreetMode, TransferParameters> transferParametersForMode;
   public final NetexFeedParameters netexDefaults;
-  public final GtfsFeedParameters gtfsDefaults;
+  public final GtfsDefaultParameters gtfsDefaults;
 
   public final DemExtractParameters demDefaults;
   public final OsmExtractParameters osmDefaults;
@@ -173,7 +171,7 @@ public class BuildConfig implements OtpDataStoreConfig {
   public final Set<String> boardingLocationTags;
   public final DemExtractParametersList dem;
   public final OsmExtractParametersList osm;
-  public final EmissionsConfig emissions;
+  public final EmissionParameters emission;
   public final TransitFeeds transitFeeds;
   public final boolean staticParkAndRide;
   public final boolean staticBikeParkAndRide;
@@ -188,6 +186,7 @@ public class BuildConfig implements OtpDataStoreConfig {
   public final ZoneId transitModelTimeZone;
   private final List<FeedScopedId> transitRouteToStationCentroid;
   public final URI stopConsolidation;
+  private final GsConfig gsConfig;
 
   /**
    * Set all parameters from the given Jackson JSON tree, applying defaults. Supplying
@@ -558,20 +557,6 @@ public class BuildConfig implements OtpDataStoreConfig {
       )
       .asPattern(DEFAULT_DEM_PATTERN);
 
-    gsCredentials = root
-      .of("gsCredentials")
-      .since(V2_0)
-      .summary("Local file system path to Google Cloud Platform service accounts credentials file.")
-      .description(
-        """
-        The credentials is used to access GCS urls. When using GCS from outside of Google Cloud you
-        need to provide a path the the service credentials. Environment variables in the path are
-        resolved.
-
-        This is a path to a file on the local file system, not an URI.
-        """
-      )
-      .asString(null);
     graph = root
       .of("graph")
       .since(V2_0)
@@ -608,7 +593,7 @@ public class BuildConfig implements OtpDataStoreConfig {
     osm = OsmConfig.mapOsmConfig(root, "osm", osmDefaults);
     demDefaults = DemConfig.mapDemDefaultsConfig(root, "demDefaults");
     dem = DemConfig.mapDemConfig(root, "dem", demDefaults);
-    emissions = new EmissionsConfig("emissions", root);
+    emission = EmissionConfig.mapEmissionsConfig("emission", root);
 
     netexDefaults = NetexConfig.mapNetexDefaultParameters(root, "netexDefaults");
     gtfsDefaults = GtfsConfig.mapGtfsDefaultParameters(root, "gtfsDefaults");
@@ -620,11 +605,13 @@ public class BuildConfig implements OtpDataStoreConfig {
     );
 
     // List of complex parameters
-    fareServiceFactory = FaresConfiguration.fromConfig(root, "fares");
+    fareConfig = FaresConfiguration.fromConfig(root, "fares");
     edgeNamer = EdgeNamer.EdgeNamerFactory.fromConfig(root, "osmNaming");
     dataOverlay = DataOverlayConfigMapper.map(root, "dataOverlay");
 
     transferRequests = TransferRequestConfig.map(root, "transferRequests");
+
+    gsConfig = GsConfig.fromConfig(root, "gsConfig");
 
     if (logUnusedParams && LOG.isWarnEnabled()) {
       root.logAllWarnings(LOG::warn);
@@ -637,8 +624,8 @@ public class BuildConfig implements OtpDataStoreConfig {
   }
 
   @Override
-  public String gsCredentials() {
-    return gsCredentials;
+  public GsConfig gsParameters() {
+    return gsConfig;
   }
 
   @Override
@@ -659,6 +646,11 @@ public class BuildConfig implements OtpDataStoreConfig {
   @Override
   public List<URI> netexFiles() {
     return transitFeeds.netexFiles();
+  }
+
+  @Override
+  public List<URI> emissionFiles() {
+    return emission.emissionFiles();
   }
 
   @Override
