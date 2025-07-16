@@ -1,8 +1,16 @@
 {
   "routingDefaults": {
+    "maxJourneyDuration": "PT12H",
     "numItineraries": 6,
     "waitReluctance": 0.5,
     "transferSlack": 0,
+    "bicycle": {
+      "rental": {
+        "allowKeepingAtDestination": true,
+        "dropOffTime": "PT1M",
+        "useAvailabilityInformation": true
+      }
+    },
     "walk": {
       "speed": 1.4,
       "stairsReluctance": 1.4
@@ -21,43 +29,155 @@
       "frequency": "PT30S",
       "url": "https://gtfs-rt.r-ov.nl/trainUpdates.pb",
       "backwardsDelayPropagationType": "ALWAYS"
-    },
-    {
-      "feedId": "NL",
-      "type": "stop-time-updater",
-      "frequency": "PT60S",
-      "url": "http://gtfs.ovapi.nl/nl/tripUpdates.pb",
-      "backwardsDelayPropagationType": "ALWAYS"
-    },
-    {
-      "type": "vehicle-rental",
-      "sourceType": "gbfs",
-      "frequency": "PT1M",
-      "network": "donkey-den-haag",
-      "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_den_haag/gbfs.json"
-    },
-    {
-      "type": "vehicle-rental",
-      "sourceType": "gbfs",
-      "frequency": "PT1M",
-      "network": "dott-eindhoven",
-      "url": "https://gbfs.api.ridedott.com/public/v2/eindhoven/gbfs.json",
-      "geofencingZones": true
-    },
-    {
-      "type": "vehicle-rental",
-      "sourceType": "gbfs",
-      "frequency": "PT1M",
-      "network": "ovfiets",
-      "url": "https://gbfs.openov.nl/ovfiets/gbfs.json",
-      "allowKeepingRentedVehicleAtDestination": true
-    },
-    {
-      "type": "vehicle-parking",
-      "sourceType": "bicycle-park-api",
-      "frequency": "PT1M",
-      "feedId": "fietsenstalling",
-      "url": "https://otp2.moopmobility.nl/data/bicycle_parkings.json"
     }
+//    {
+//      "feedId": "NL",
+//      "type": "stop-time-updater",
+//      "frequency": "PT60S",
+//      "url": "http://gtfs.ovapi.nl/nl/tripUpdates.pb",
+//      "backwardsDelayPropagationType": "ALWAYS"
+//    },
+//    //-- Bolt
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "bolt-antwerp",
+//      "url": "https://mds.bolt.eu/gbfs/2/1413/gbfs",
+//      "geofencingZones": true
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "bolt-enschede",
+//      "url": "https://mds.bolt.eu/gbfs/2/1409/gbfs",
+//      "geofencingZones": true
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "bolt-groningen",
+//      "url": "https://mds.bolt.eu/gbfs/2/1425/gbfs",
+//      "geofencingZones": true
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "bolt-nijmegen",
+//      "url": "https://mds.bolt.eu/gbfs/2/1445/gbfs",
+//      "geofencingZones": true
+//    },
+//
+//    //-- Dott
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "dott-eindhoven",
+//      "url": "https://gbfs.api.ridedott.com/public/v2/eindhoven/gbfs.json",
+//      "geofencingZones": true
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "dott-utrecht",
+//      "url": "https://gbfs.api.ridedott.com/public/v2/utrecht/gbfs.json",
+//      "geofencingZones": true
+//    },
+//    //-- Check
+//
+//    //--Donkey
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "donkey-den-haag",
+//      "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_den_haag/gbfs.json"
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "donkey-am",
+//      "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_am/gbfs.json"
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "donkey-den-haag",
+//      "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_den_haag/gbfs.json"
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "donkey-dordrecht",
+//      "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_dordrecht/gbfs.json"
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "donkey-gorinchem",
+//      "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_gorinchem/gbfs.json"
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "donkey-rt",
+//      "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_rt/gbfs.json"
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "donkey-ut",
+//      "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_ut/gbfs.json"
+//    },
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "donkey-utrechtse-heuvelrug",
+//      "url": "https://stables.donkey.bike/api/public/gbfs/2/donkey_utrechtse_heuvelrug/gbfs.json"
+//    },
+//    // Cykl (v1)
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "cykl-wageningen",
+//      "url": "https://www.cykl.nl/gbfs/gbfs.json"
+//    },
+//    // GoAbout (v2)
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "goabout",
+//      "url": "https://gbfs.goabout.com/2/gbfs.json"
+//    },
+//    //-- OVFiets
+//    {
+//      "type": "vehicle-rental",
+//      "sourceType": "gbfs",
+//      "frequency": "PT1M",
+//      "network": "ovfiets",
+//      "url": "https://gbfs.openov.nl/ovfiets/gbfs.json",
+//      "allowKeepingRentedVehicleAtDestination": true
+//    },
+//    {
+//      "type": "vehicle-parking",
+//      "sourceType": "bicycle-park-api",
+//      "frequency": "PT1H",
+//      "feedId": "fietsenstalling",
+//      "url": "https://otp2.moopmobility.nl/data/bicycle_parkings.json"
+//    }
   ]
 }
