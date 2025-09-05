@@ -29,7 +29,7 @@ import org.onebusaway.gtfs.serialization.GtfsEntitySchemaFactory;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.GenericMutableDao;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
-import org.opentripplanner.ext.fares.impl.DefaultFareServiceFactory;
+import org.opentripplanner.ext.fares.impl.gtfs.DefaultFareServiceFactory;
 import org.opentripplanner.ext.flex.FlexTripsMapper;
 import org.opentripplanner.framework.application.OTPFeature;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
@@ -139,7 +139,7 @@ public class GtfsModule implements GraphBuilderModule {
       for (GtfsBundle gtfsBundle : gtfsBundles) {
         GtfsMutableRelationalDao gtfsDao = loadBundle(gtfsBundle);
 
-        final String feedId = gtfsBundle.getFeedId();
+        var feedId = gtfsBundle.getFeedId();
         verifyUniqueFeedId(gtfsBundle, feedIdsEncountered, feedId);
 
         feedIdsEncountered.put(feedId, gtfsBundle);
@@ -149,10 +149,9 @@ public class GtfsModule implements GraphBuilderModule {
           feedId,
           issueStore,
           gtfsBundle.parameters().discardMinTransferTimes(),
-          gtfsDao,
           gtfsBundle.parameters().stationTransferPreference()
         );
-        mapper.mapStopTripAndRouteDataIntoBuilder();
+        mapper.mapStopTripAndRouteDataIntoBuilder(gtfsDao);
 
         OtpTransitServiceBuilder builder = mapper.getBuilder();
         var fareRulesData = mapper.fareRulesData();
@@ -172,7 +171,7 @@ public class GtfsModule implements GraphBuilderModule {
         );
 
         // We need to run this after the cleaning of the data, as stop indices might have changed
-        mapper.mapAndAddTransfersToBuilder();
+        mapper.mapAndAddTransfersToBuilder(gtfsDao);
 
         GeometryProcessor geometryProcessor = new GeometryProcessor(
           builder,
@@ -211,10 +210,6 @@ public class GtfsModule implements GraphBuilderModule {
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
-    } finally {
-      // Note the close method of each bundle should NOT throw an exception, so this
-      // code should be safe without the try/catch block.
-      gtfsBundles.forEach(GtfsBundle::close);
     }
 
     timetableRepository.validateTimeZones();
@@ -314,7 +309,9 @@ public class GtfsModule implements GraphBuilderModule {
   }
 
   private GtfsMutableRelationalDao loadBundle(GtfsBundle gtfsBundle) throws IOException {
-    StoreImpl store = new StoreImpl(new GtfsRelationalDaoImpl());
+    var dao = new GtfsRelationalDaoImpl();
+    dao.setPackShapePoints(true);
+    StoreImpl store = new StoreImpl(dao);
     store.open();
     LOG.info("reading {}", gtfsBundle.feedInfo());
 
