@@ -45,7 +45,6 @@ public final class StopTime implements Comparable<StopTime> {
   private PickDrop dropOffType = PickDrop.SCHEDULED;
 
   private String scheduledPlatform;
-  private String realtimePlatform;
 
   private double shapeDistTraveled = MISSING_VALUE;
 
@@ -89,20 +88,8 @@ public final class StopTime implements Comparable<StopTime> {
     this.trip = trip;
   }
 
-  public String getScheduledPlatform() {
-    return scheduledPlatform;
-  }
-
   public void setScheduledPlatform(String scheduledPlatform) {
     this.scheduledPlatform = scheduledPlatform;
-  }
-
-  public String getRealtimePlatform() {
-    return realtimePlatform;
-  }
-
-  public void setRealtimePlatform(String realtimePlatform) {
-    this.realtimePlatform = realtimePlatform;
   }
 
   public int getStopSequence() {

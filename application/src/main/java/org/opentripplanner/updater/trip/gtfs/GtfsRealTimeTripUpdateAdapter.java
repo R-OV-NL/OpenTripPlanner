@@ -999,11 +999,11 @@ public class GtfsRealTimeTripUpdateAdapter {
 
     // Update all times to mark trip times as realtime
     for (int stopIndex = 0; stopIndex < stopTimes.size(); stopIndex++) {
-        builder.withArrivalTime(stopIndex, builder.getScheduledArrivalTime(stopIndex));
-        builder.withDepartureTime(stopIndex, builder.getScheduledDepartureTime(stopIndex));
+      builder.withArrivalTime(stopIndex, builder.getScheduledArrivalTime(stopIndex));
+      builder.withDepartureTime(stopIndex, builder.getScheduledDepartureTime(stopIndex));
 
-        int arrivalDelay = stopTimeUpdates.get(stopIndex).getArrival().getDelay();
-        int departureDelay = stopTimeUpdates.get(stopIndex).getDeparture().getDelay();
+      int arrivalDelay = stopTimeUpdates.get(stopIndex).getArrival().getDelay();
+      int departureDelay = stopTimeUpdates.get(stopIndex).getDeparture().getDelay();
 
       builder.withArrivalDelay(stopIndex, arrivalDelay);
       builder.withDepartureDelay(stopIndex, departureDelay);
@@ -1017,16 +1017,6 @@ public class GtfsRealTimeTripUpdateAdapter {
         .get(stopIndex)
         .getExtension(GtfsRealtimeOVapi.ovapiStopTimeUpdate)
         .getActualTrack();
-
-      if (!plannedPlatform.equals(actualPlatform)) {
-        debug(
-          trip.getId(),
-          serviceDate,
-          "Planned platform {} and actual platform {} are not equal",
-          plannedPlatform,
-          actualPlatform
-        );
-      }
 
       if (!plannedPlatform.isBlank()) builder.withScheduledPlatform(stopIndex, plannedPlatform);
       if (!actualPlatform.isBlank()) builder.withRealtimePlatform(stopIndex, actualPlatform);

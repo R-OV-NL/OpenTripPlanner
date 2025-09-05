@@ -1,5 +1,5 @@
 {
-  "areaVisibility": true,
+  "areaVisibility": false,
   "buildReportDir": "build-report",
   "dataImportReport": true,
   "maxTransferDuration": "PT20M",

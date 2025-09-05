@@ -32,7 +32,8 @@ public final class RealTimeTripTimes implements TripTimes {
   private final RealTimeState realTimeState;
   private final StopRealTimeState[] stopRealTimeStates;
 
-  private final String[] platforms;
+  private final String[] scheduledPlatforms;
+  private final String[] realtimePlatforms;
 
   @Nullable
   private final I18NString tripHeadsign;
@@ -47,7 +48,8 @@ public final class RealTimeTripTimes implements TripTimes {
     departureTimes = builder.departureTimes();
     realTimeState = builder.realTimeState();
     stopRealTimeStates = builder.stopRealTimeStates();
-    platforms = builder.platforms();
+    scheduledPlatforms = builder.scheduledPlatforms();
+    realtimePlatforms = builder.realtimePlatforms();
     tripHeadsign = builder.tripHeadsign();
     stopHeadsigns = builder.stopHeadsigns();
     occupancyStatus = builder.occupancyStatus();
@@ -67,7 +69,8 @@ public final class RealTimeTripTimes implements TripTimes {
     this.tripHeadsign = original.tripHeadsign;
     this.stopHeadsigns = original.stopHeadsigns;
     this.occupancyStatus = original.occupancyStatus;
-    this.platforms = original.platforms.clone();
+    this.scheduledPlatforms = original.scheduledPlatforms.clone();
+    this.realtimePlatforms = original.realtimePlatforms.clone();
     this.wheelchairAccessibility = original.wheelchairAccessibility;
   }
 
@@ -86,7 +89,8 @@ public final class RealTimeTripTimes implements TripTimes {
     this.tripHeadsign = original.tripHeadsign;
     this.stopHeadsigns = original.stopHeadsigns;
     this.occupancyStatus = original.occupancyStatus;
-    this.platforms = original.platforms.clone();
+    this.scheduledPlatforms = original.scheduledPlatforms.clone();
+    this.realtimePlatforms = original.realtimePlatforms.clone();
     this.wheelchairAccessibility = original.wheelchairAccessibility;
   }
 
@@ -178,23 +182,19 @@ public final class RealTimeTripTimes implements TripTimes {
     return getDepartureTime(stop) - scheduledTripTimes.getScheduledDepartureTime(stop);
   }
 
-    public String getRealtimePlatform(int stop) {
-        return platforms[stop];
+  public String getRealtimePlatform(int stop) {
+    if (realtimePlatforms != null && realtimePlatforms[stop] != null && !realtimePlatforms[stop].isBlank()) {
+      return realtimePlatforms[stop];
     }
+    return getScheduledPlatform(stop);
+  }
 
-    //TODO: Check if this is still correct
-    public void setRealtimePlatform(int stop, String platform) {
-        platforms[stop] = platform;
+  public String getScheduledPlatform(int stop) {
+    if (scheduledPlatforms != null && scheduledPlatforms[stop] != null && !scheduledPlatforms[stop].isBlank()) {
+      return scheduledPlatforms[stop];
     }
-
-    public String getScheduledPlatform(int stop) {
-        return scheduledTripTimes.getScheduledPlatform(stop);
-    }
-
-    //TODO: Check if this is still correct
-    public void setScheduledPlatform(int stop, String platform) {
-        scheduledTripTimes.setScheduledPlatform(stop, platform);
-    }
+    return scheduledTripTimes.getScheduledPlatform(stop);
+  }
 
   public boolean isCancelledStop(int stop) {
     return isStopRealTimeStates(stop, StopRealTimeState.CANCELLED);

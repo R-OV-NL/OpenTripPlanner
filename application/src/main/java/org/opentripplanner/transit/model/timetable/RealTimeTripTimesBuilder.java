@@ -15,6 +15,8 @@ public class RealTimeTripTimesBuilder {
   private ScheduledTripTimes scheduledTripTimes;
   private final Integer[] arrivalTimes;
   private final Integer[] departureTimes;
+  private final String[] scheduledPlatforms;
+  private final String[] realtimePlatforms;
 
   @Nullable
   private RealTimeState realTimeState;
@@ -49,6 +51,8 @@ public class RealTimeTripTimesBuilder {
     Arrays.fill(stopRealTimeStates, StopRealTimeState.DEFAULT);
     stopHeadsigns = new I18NString[numStops];
     occupancyStatus = new OccupancyStatus[numStops];
+    scheduledPlatforms = new String[numStops];
+    realtimePlatforms = new String[numStops];
     Arrays.fill(occupancyStatus, OccupancyStatus.NO_DATA_AVAILABLE);
   }
 
@@ -83,6 +87,14 @@ public class RealTimeTripTimesBuilder {
     return result;
   }
 
+  public String[] scheduledPlatforms() {
+    return scheduledPlatforms.clone();
+  }
+
+  public String[] realtimePlatforms() {
+    return realtimePlatforms.clone();
+  }
+
   @Nullable
   public Integer getArrivalTime(int stop) {
     return arrivalTimes[stop];
@@ -99,6 +111,18 @@ public class RealTimeTripTimesBuilder {
       return null;
     }
     return arrivalTimes[stop] - getScheduledArrivalTime(stop);
+  }
+
+  public RealTimeTripTimesBuilder withScheduledPlatform(int stop, String platform) {
+    updated = true;
+    scheduledPlatforms[stop] = platform;
+    return this;
+  }
+
+  public RealTimeTripTimesBuilder withRealtimePlatform(int stop, String platform) {
+    updated = true;
+    realtimePlatforms[stop] = platform;
+    return this;
   }
 
   public RealTimeTripTimesBuilder withArrivalTime(int stop, int time) {
