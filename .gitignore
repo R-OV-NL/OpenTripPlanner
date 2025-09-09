@@ -50,3 +50,5 @@ graph.obj
 
 # draw.io backup files
 *.svg.bkp
+
+**/bin/**
