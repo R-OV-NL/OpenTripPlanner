@@ -149,6 +149,9 @@ public class GtfsModule implements GraphBuilderModule {
         );
         mapper.mapStopTripAndRouteDataIntoBuilder(gtfsDao);
 
+        // Load optional GroupOfStations sidecar for this feed, after stations are present
+        GroupOfStationsSidecarLoader.loadIntoBuilder(gtfsBundle, mapper.getBuilder());
+
         OtpTransitServiceBuilder builder = mapper.getBuilder();
         var fareRulesData = mapper.fareRulesData();
 
