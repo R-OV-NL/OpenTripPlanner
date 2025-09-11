@@ -36,6 +36,7 @@ import org.opentripplanner.transit.model.timetable.Trip;
 import org.opentripplanner.transit.model.timetable.TripTimesFactory;
 import org.opentripplanner.updater.spi.DataValidationExceptionMapper;
 import org.opentripplanner.updater.spi.UpdateError;
+import org.opentripplanner.updater.trip.gtfs.model.RealtimePlatforms;
 import org.opentripplanner.updater.trip.gtfs.model.StopTimeUpdate;
 import org.opentripplanner.updater.trip.gtfs.model.TripTimesPatch;
 import org.opentripplanner.updater.trip.gtfs.model.TripUpdate;
@@ -104,6 +105,7 @@ class TripTimesUpdater {
     Map<Integer, PickDrop> updatedDropoffs = new HashMap<>();
     Map<Integer, String> replacedStopIndices = new HashMap<>();
 
+
     // The GTFS-RT reference specifies that StopTimeUpdates are sorted by stop_sequence.
     Iterator<StopTimeUpdate> updates = tripUpdate.stopTimeUpdates().iterator();
     StopTimeUpdate update = null;
@@ -136,6 +138,16 @@ class TripTimesUpdater {
         update.pickup().ifPresent(x -> updatedPickups.put(index, x));
         update.dropoff().ifPresent(x -> updatedDropoffs.put(index, x));
         update.assignedStopId().ifPresent(x -> replacedStopIndices.put(index, x));
+
+        var realtimePlatforms = RealtimePlatforms.ofStopTimeUpdate(update);
+        if (realtimePlatforms != null) {
+          if (realtimePlatforms.scheduledPlatform() != null) {
+            builder.withScheduledPlatform(index, realtimePlatforms.scheduledPlatform());
+          }
+          if (realtimePlatforms.actualPlatform() != null) {
+            builder.withActualPlatform(index, realtimePlatforms.actualPlatform());
+          }
+        }
 
         var scheduleRelationship = update.scheduleRelationship();
         // Handle each schedule relationship case
@@ -211,9 +223,7 @@ class TripTimesUpdater {
         "A valid TripUpdate object was applied to trip {} using the Timetable class update method.",
         tripId
       );
-      return success(
-        new TripTimesPatch(result, updatedPickups, updatedDropoffs, replacedStopIndices)
-      );
+      return success(new TripTimesPatch(result, updatedPickups, updatedDropoffs, replacedStopIndices));
     } catch (DataValidationException e) {
       return DataValidationExceptionMapper.toResult(e);
     }

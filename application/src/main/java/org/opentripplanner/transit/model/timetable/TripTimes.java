@@ -196,4 +196,18 @@ public interface TripTimes extends Serializable, Comparable<TripTimes> {
    * Time-shift all times on this trip. This is used when updating the time zone for the trip.
    */
   TripTimes adjustTimesToGraphTimeZone(Duration shiftDelta);
+
+  /**
+   * Scheduled platform (track) for a stop if available from realtime context. Defaults to null.
+   */
+  default @Nullable String getScheduledPlatform(int stop) {
+    return null;
+  }
+
+  /**
+   * Actual platform (track) for a stop if available from realtime context. Defaults to null.
+   */
+  default @Nullable String getActualPlatform(int stop) {
+    return null;
+  }
 }
