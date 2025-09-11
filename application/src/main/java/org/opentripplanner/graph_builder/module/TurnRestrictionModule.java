@@ -176,10 +176,11 @@ public class TurnRestrictionModule implements GraphBuilderModule {
     int turnRestrictionCount = 0;
     addedVertices = 0;
     addedEdges = 0;
-    for (var turnRestriction : osmInfoGraphBuildRepository.listTurnRestrictions()) {
-      processRestriction(turnRestriction);
-      turnRestrictionCount++;
-    }
+    //TODO: Figure out why this is so slow with a large dataset
+    //    for (var turnRestriction : osmInfoGraphBuildRepository.listTurnRestrictions()) {
+    //      processRestriction(turnRestriction);
+    //      turnRestrictionCount++;
+    //    }
     LOG.info(
       "Applied {} turn restrictions, added {} vertices and {} edges",
       turnRestrictionCount,

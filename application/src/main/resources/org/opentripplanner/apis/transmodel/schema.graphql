@@ -258,6 +258,10 @@ type EstimatedCall {
   stopPositionInPattern: Int!
   "Whether this is a timing point or not. Boarding and alighting is not allowed at timing points."
   timingPoint: Boolean!
+  "Aimed (scheduled) platform for this call."
+  aimedPlatform: String
+  "Actual (real-time) platform for this call."
+  actualPlatform: String
 }
 
 "Additional (optional) grouping of lines for particular purposes such as e.g. fare harmonisation or public presentation."
