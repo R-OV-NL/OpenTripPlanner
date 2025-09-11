@@ -105,7 +105,6 @@ class TripTimesUpdater {
     Map<Integer, PickDrop> updatedDropoffs = new HashMap<>();
     Map<Integer, String> replacedStopIndices = new HashMap<>();
 
-
     // The GTFS-RT reference specifies that StopTimeUpdates are sorted by stop_sequence.
     Iterator<StopTimeUpdate> updates = tripUpdate.stopTimeUpdates().iterator();
     StopTimeUpdate update = null;
@@ -223,7 +222,9 @@ class TripTimesUpdater {
         "A valid TripUpdate object was applied to trip {} using the Timetable class update method.",
         tripId
       );
-      return success(new TripTimesPatch(result, updatedPickups, updatedDropoffs, replacedStopIndices));
+      return success(
+        new TripTimesPatch(result, updatedPickups, updatedDropoffs, replacedStopIndices)
+      );
     } catch (DataValidationException e) {
       return DataValidationExceptionMapper.toResult(e);
     }
@@ -354,6 +355,17 @@ class TripTimesUpdater {
       }
       if (builder.getDepartureTime(stopIndex) == null) {
         builder.withDepartureDelay(stopIndex, 0);
+      }
+
+      // Set platform information for NEW/REPLACEMENT trips as well
+      var realtimePlatforms = RealtimePlatforms.ofStopTimeUpdate(addedStopTime);
+      if (realtimePlatforms != null) {
+        if (realtimePlatforms.scheduledPlatform() != null) {
+          builder.withScheduledPlatform(stopIndex, realtimePlatforms.scheduledPlatform());
+        }
+        if (realtimePlatforms.actualPlatform() != null) {
+          builder.withActualPlatform(stopIndex, realtimePlatforms.actualPlatform());
+        }
       }
     }
 

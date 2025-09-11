@@ -43,5 +43,4 @@ public final class TripTimesPatch {
   public Map<Integer, String> replacedStopIndices() {
     return replacedStopIndices;
   }
-
 }

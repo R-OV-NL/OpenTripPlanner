@@ -3,8 +3,13 @@ package org.opentripplanner.updater.trip.gtfs.updater.mqtt;
 import static org.opentripplanner.updater.trip.UpdateIncrementality.DIFFERENTIAL;
 import static org.opentripplanner.updater.trip.UpdateIncrementality.FULL_DATASET;
 
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.transit.realtime.GtfsRealtime;
+import com.google.transit.realtime.GtfsRealtimeOVapi;
+
+import de.mfdz.MfdzRealtimeExtensions;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +64,7 @@ public class MqttGtfsRealtimeUpdater implements GraphUpdater {
   private final String clientId = "OpenTripPlanner-" + MqttClient.generateClientId();
   private final String configRef;
   private final MemoryPersistence persistence = new MemoryPersistence();
+  private final ExtensionRegistry registry = ExtensionRegistry.newInstance();
   private final GtfsRealTimeTripUpdateAdapter adapter;
   private final Consumer<UpdateResult> recordMetrics;
   private WriteToGraphCallback saveResultOnGraph;
@@ -82,6 +88,10 @@ public class MqttGtfsRealtimeUpdater implements GraphUpdater {
     // Set properties of realtime data snapshot source
     this.fuzzyTripMatching = parameters.fuzzyTripMatching();
     this.recordMetrics = TripUpdateMetrics.streaming(parameters);
+
+    MfdzRealtimeExtensions.registerAllExtensions(registry);
+    GtfsRealtimeOVapi.registerAllExtensions(registry);
+    
     LOG.info("Creating streaming GTFS-RT TripUpdate updater subscribing to MQTT broker at {}", url);
   }
 
