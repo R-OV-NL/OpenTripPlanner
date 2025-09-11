@@ -94,9 +94,10 @@ public class EstimatedCallType {
             "Actual platform at which the vehicle is expected to arrive/depart. Updated with real time information if available."
           )
           .dataFetcher(environment -> {
-            //TODO: Actually use the realtime information from GTFS-RT
             TripTimeOnDate tripTimeOnDate = environment.getSource();
-            if(tripTimeOnDate == null) { return null; }
+            if (tripTimeOnDate == null) {
+              return null;
+            }
             return tripTimeOnDate.getActualPlatform();
           })
           .build()
@@ -109,9 +110,10 @@ public class EstimatedCallType {
             "Scheduled platform at which the vehicle is expected to arrive/depart. Not affected by real time updates."
           )
           .dataFetcher(environment -> {
-            //TODO: Actually use the realtime information from GTFS-RT
             TripTimeOnDate tripTimeOnDate = environment.getSource();
-            if(tripTimeOnDate == null) { return null; }
+            if (tripTimeOnDate == null) {
+              return null;
+            }
             return tripTimeOnDate.getActualPlatform();
           })
           .build()

@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.opentripplanner.framework.json.ObjectMappers;
-import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.framework.geometry.WgsCoordinate;
+import org.opentripplanner.framework.i18n.NonLocalizedString;
+import org.opentripplanner.framework.json.ObjectMappers;
 import org.opentripplanner.model.impl.OtpTransitServiceBuilder;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.site.GroupOfStations;
@@ -60,11 +60,18 @@ public class GroupOfStationsSidecarLoader {
         loadFromStream(is, bundle, builder);
       }
     } catch (Exception e) {
-      LOG.warn("Failed to load GroupOfStations sidecar for feed {}: {}", bundle.getFeedId(), e.toString());
+      LOG.warn(
+        "Failed to load GroupOfStations sidecar for feed {}: {}",
+        bundle.getFeedId(),
+        e.toString()
+      );
     }
   }
 
-  private static boolean loadFromWorkingDirectory(GtfsBundle bundle, OtpTransitServiceBuilder builder) {
+  private static boolean loadFromWorkingDirectory(
+    GtfsBundle bundle,
+    OtpTransitServiceBuilder builder
+  ) {
     try {
       String preferred = "group_of_stations_" + bundle.getFeedId() + ".json";
       java.io.File preferredFile = new java.io.File(preferred);
@@ -98,14 +105,22 @@ public class GroupOfStationsSidecarLoader {
     return false;
   }
 
-  private static void loadFromStream(InputStream is, GtfsBundle bundle, OtpTransitServiceBuilder builder) throws Exception {
+  private static void loadFromStream(
+    InputStream is,
+    GtfsBundle bundle,
+    OtpTransitServiceBuilder builder
+  ) throws Exception {
     List<GroupSpec> specs = MAPPER.readValue(is, new TypeReference<List<GroupSpec>>() {});
     for (GroupSpec spec : specs) {
       addGroup(spec, bundle, builder);
     }
   }
 
-  private static void addGroup(GroupSpec spec, GtfsBundle bundle, OtpTransitServiceBuilder builder) {
+  private static void addGroup(
+    GroupSpec spec,
+    GtfsBundle bundle,
+    OtpTransitServiceBuilder builder
+  ) {
     String feedId = bundle.getFeedId();
     FeedScopedId groupId = toFeedScopedId(feedId, spec.id);
 
@@ -124,8 +139,9 @@ public class GroupOfStationsSidecarLoader {
       return;
     }
 
-    GroupOfStationsBuilder gos = GroupOfStations.of(groupId)
-      .withName(new NonLocalizedString(Objects.requireNonNullElse(spec.name, groupId.toString())));
+    GroupOfStationsBuilder gos = GroupOfStations.of(groupId).withName(
+      new NonLocalizedString(Objects.requireNonNullElse(spec.name, groupId.toString()))
+    );
 
     WgsCoordinate coordinate = coordinateOrCentroid(spec, childStations);
     if (coordinate != null) {
@@ -159,11 +175,7 @@ public class GroupOfStationsSidecarLoader {
       return new WgsCoordinate(spec.coordinate.lon, spec.coordinate.lat);
     }
     // Compute simple average of child station coordinates if available
-    var coords = stations
-      .stream()
-      .map(Station::getCoordinate)
-      .filter(Objects::nonNull)
-      .toList();
+    var coords = stations.stream().map(Station::getCoordinate).filter(Objects::nonNull).toList();
     if (coords.isEmpty()) {
       return null;
     }
@@ -173,6 +185,7 @@ public class GroupOfStationsSidecarLoader {
   }
 
   static class GroupSpec {
+
     public String id;
     public String name;
     public List<String> stations = List.of();
@@ -180,9 +193,8 @@ public class GroupOfStationsSidecarLoader {
   }
 
   static class CoordinateSpec {
+
     public double lat;
     public double lon;
   }
 }
-
-

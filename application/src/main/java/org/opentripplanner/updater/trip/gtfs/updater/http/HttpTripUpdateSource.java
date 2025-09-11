@@ -5,6 +5,7 @@ import static org.opentripplanner.updater.trip.UpdateIncrementality.FULL_DATASET
 
 import com.google.protobuf.ExtensionRegistry;
 import com.google.transit.realtime.GtfsRealtime;
+import com.google.transit.realtime.GtfsRealtimeOVapi;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
@@ -38,6 +39,7 @@ class HttpTripUpdateSource {
     this.url = config.url();
     this.headers = HttpHeaders.of().acceptProtobuf().add(config.headers()).build();
     MfdzRealtimeExtensions.registerAllExtensions(registry);
+    GtfsRealtimeOVapi.registerAllExtensions(registry);
     otpHttpClient = new OtpHttpClientFactory().create(LOG);
   }
 

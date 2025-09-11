@@ -222,6 +222,8 @@ type EstimatedCall {
   actualArrivalTime: DateTime
   "Actual time of departure from quay. Updated with real time information if available."
   actualDepartureTime: DateTime
+  "Actual platform at which the vehicle is expected to arrive/depart. Updated with real time information if available."
+  actualPlatform: String
   "Scheduled time of arrival at quay. Not affected by read time updated"
   aimedArrivalTime: DateTime!
   "Scheduled time of departure from quay. Not affected by read time updated"
@@ -238,6 +240,8 @@ type EstimatedCall {
   expectedArrivalTime: DateTime!
   "Expected time of departure from quay. Updated with real time information if available. Will be null if an actualDepartureTime exists"
   expectedDepartureTime: DateTime!
+  "Scheduled platform at which the vehicle is expected to arrive/depart. Not affected by real time updates."
+  expectedPlatform: String
   "Whether vehicle may be alighted at quay."
   forAlighting: Boolean!
   "Whether vehicle may be boarded at quay."
@@ -258,10 +262,6 @@ type EstimatedCall {
   stopPositionInPattern: Int!
   "Whether this is a timing point or not. Boarding and alighting is not allowed at timing points."
   timingPoint: Boolean!
-  "Aimed (scheduled) platform for this call."
-  aimedPlatform: String
-  "Actual (real-time) platform for this call."
-  actualPlatform: String
 }
 
 "Additional (optional) grouping of lines for particular purposes such as e.g. fare harmonisation or public presentation."
