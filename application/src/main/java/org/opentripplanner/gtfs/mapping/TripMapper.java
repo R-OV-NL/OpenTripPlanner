@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.opentripplanner.framework.i18n.I18NString;
+import org.opentripplanner.gtfs.extension.TripExtension;
 import org.opentripplanner.routing.api.request.framework.TimePenalty;
 import org.opentripplanner.transit.model.timetable.Trip;
 import org.opentripplanner.utils.collection.MapUtils;
@@ -74,7 +75,14 @@ class TripMapper {
     lhs.withWheelchairBoarding(WheelchairAccessibilityMapper.map(rhs.getWheelchairAccessible()));
     lhs.withBikesAllowed(BikeAccessMapper.mapForTrip(rhs));
     lhs.withCarsAllowed(CarAccessMapper.mapForTrip(rhs));
-    lhs.withLongNam
+
+    //Dutch Extension for TripLongName and RealtimeTripId
+    TripExtension ext = rhs.getExtension(TripExtension.class);
+
+    if(ext != null) {
+        lhs.withRealtimeTripId(ext.getRealtimeTripId());
+        lhs.withLongName(ext.getTripLongName());
+    }
 
     var trip = lhs.build();
     mapSafeTimePenalty(rhs).ifPresent(f -> flexSafeTimePenalties.put(trip, f));
