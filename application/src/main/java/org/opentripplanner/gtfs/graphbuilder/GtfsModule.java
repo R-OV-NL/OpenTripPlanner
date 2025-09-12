@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.onebusaway.csv_entities.EntityHandler;
+import org.onebusaway.csv_entities.schema.DefaultEntitySchemaFactory;
 import org.onebusaway.gtfs.impl.GtfsRelationalDaoImpl;
 import org.onebusaway.gtfs.model.Agency;
 import org.onebusaway.gtfs.model.Area;
@@ -23,6 +24,8 @@ import org.onebusaway.gtfs.model.IdentityBean;
 import org.onebusaway.gtfs.model.RiderCategory;
 import org.onebusaway.gtfs.model.Route;
 import org.onebusaway.gtfs.model.StopAreaElement;
+import org.onebusaway.gtfs.model.Trip;
+import org.onebusaway.gtfs.serialization.GtfsEntitySchemaFactory;
 import org.onebusaway.gtfs.serialization.GtfsReader;
 import org.onebusaway.gtfs.services.GenericMutableDao;
 import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
@@ -35,6 +38,7 @@ import org.opentripplanner.graph_builder.module.AddTransitEntitiesToGraph;
 import org.opentripplanner.graph_builder.module.ValidateAndInterpolateStopTimesForEachTrip;
 import org.opentripplanner.graph_builder.module.geometry.GeometryProcessor;
 import org.opentripplanner.gtfs.GenerateTripPatternsOperation;
+import org.opentripplanner.gtfs.extension.TripExtension;
 import org.opentripplanner.gtfs.interlining.InterlineProcessor;
 import org.opentripplanner.gtfs.mapping.GTFSToOtpTransitServiceMapper;
 import org.opentripplanner.model.OtpTransitService;
@@ -306,7 +310,11 @@ public class GtfsModule implements GraphBuilderModule {
 
     String gtfsFeedId = gtfsBundle.getFeedId();
 
+    DefaultEntitySchemaFactory factory = GtfsEntitySchemaFactory.createEntitySchemaFactory();
+    factory.addExtension(Trip.class, TripExtension.class);
+
     GtfsReader reader = new GtfsReader();
+    reader.setEntitySchemaFactory(factory);
     reader.setInputSource(gtfsBundle.getCsvInputSource());
     reader.setEntityStore(store);
     reader.setInternStrings(true);

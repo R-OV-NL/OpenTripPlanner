@@ -79,9 +79,9 @@ class TripMapper {
     //Dutch Extension for TripLongName and RealtimeTripId
     TripExtension ext = rhs.getExtension(TripExtension.class);
 
-    if(ext != null) {
-        lhs.withRealtimeTripId(ext.getRealtimeTripId());
-        lhs.withLongName(ext.getTripLongName());
+    if (ext != null) {
+      lhs.withRealtimeTripId(ext.getRealtimeTripId());
+      lhs.withLongName(ext.getTripLongName());
     }
 
     var trip = lhs.build();

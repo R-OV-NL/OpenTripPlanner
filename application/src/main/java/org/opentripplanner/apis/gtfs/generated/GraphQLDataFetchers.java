@@ -1245,6 +1245,7 @@ public class GraphQLDataFetchers {
     public DataFetcher<Boolean> timepoint();
 
     public DataFetcher<String> scheduledPlatform();
+
     public DataFetcher<Trip> trip();
   }
 
@@ -1343,7 +1344,9 @@ public class GraphQLDataFetchers {
     public DataFetcher<String> tripHeadsign();
 
     public DataFetcher<String> tripShortName();
+
     public DataFetcher<String> tripLongName();
+
     public DataFetcher<String> realtimeTripId();
 
     public DataFetcher<

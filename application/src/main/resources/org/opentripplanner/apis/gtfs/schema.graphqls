@@ -2431,6 +2431,7 @@ type Stoptime {
   scheduledArrival: Int
   "Scheduled departure time. Format: seconds since midnight of the departure date"
   scheduledDeparture: Int
+  scheduledPlatform: String
   "Departure date of the trip. Format: Unix timestamp (local time) in seconds."
   serviceDay: Long
   "The stop where this arrival/departure happens"
@@ -2461,7 +2462,6 @@ type Stoptime {
   timepoint: Boolean
   "Trip which this stoptime is for"
   trip: Trip
-  scheduledPlatform: String
 }
 
 "Stoptimes grouped by pattern"
@@ -2579,6 +2579,7 @@ type Trip implements Node {
   occupancy: TripOccupancy
   "The pattern the trip is running on"
   pattern: Pattern
+  realtimeTripId: String
   "The route the trip is running on"
   route: Route!
   "Short name of the route this trip is running. See field `shortName` of Route."
@@ -2611,9 +2612,8 @@ type Trip implements Node {
     """
     language: String
   ): String
-  tripShortName: String
   tripLongName: String
-  realtimeTripId: String
+  tripShortName: String
   "Whether the vehicle running this trip can be boarded by a wheelchair"
   wheelchairAccessible: WheelchairBoarding
 }
