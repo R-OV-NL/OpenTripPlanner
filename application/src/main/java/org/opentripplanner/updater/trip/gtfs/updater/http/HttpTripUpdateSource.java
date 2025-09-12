@@ -5,10 +5,10 @@ import static org.opentripplanner.updater.trip.UpdateIncrementality.FULL_DATASET
 
 import com.google.protobuf.ExtensionRegistry;
 import com.google.transit.realtime.GtfsRealtime;
-import com.google.transit.realtime.GtfsRealtimeOVapi;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.TripUpdate;
+import com.google.transit.realtime.GtfsRealtimeOVapi;
 import de.mfdz.MfdzRealtimeExtensions;
 import java.net.URI;
 import java.util.ArrayList;

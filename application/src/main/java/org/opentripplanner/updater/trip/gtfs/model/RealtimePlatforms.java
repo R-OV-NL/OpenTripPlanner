@@ -39,7 +39,7 @@ public class RealtimePlatforms {
     var actualPlatform = ext.getActualTrack();
     var stationCode = ext.getStationId();
 
-    if(scheduledPlatform.isEmpty() && actualPlatform.isEmpty()){
+    if (scheduledPlatform.isEmpty() && actualPlatform.isEmpty()) {
       return null;
     }
 

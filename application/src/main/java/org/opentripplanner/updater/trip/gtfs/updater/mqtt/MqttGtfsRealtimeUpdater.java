@@ -7,9 +7,7 @@ import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.transit.realtime.GtfsRealtime;
 import com.google.transit.realtime.GtfsRealtimeOVapi;
-
 import de.mfdz.MfdzRealtimeExtensions;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +89,7 @@ public class MqttGtfsRealtimeUpdater implements GraphUpdater {
 
     MfdzRealtimeExtensions.registerAllExtensions(registry);
     GtfsRealtimeOVapi.registerAllExtensions(registry);
-    
+
     LOG.info("Creating streaming GTFS-RT TripUpdate updater subscribing to MQTT broker at {}", url);
   }
 

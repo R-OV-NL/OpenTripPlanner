@@ -2461,6 +2461,7 @@ type Stoptime {
   timepoint: Boolean
   "Trip which this stoptime is for"
   trip: Trip
+  scheduledPlatform: String
 }
 
 "Stoptimes grouped by pattern"
@@ -2611,6 +2612,8 @@ type Trip implements Node {
     language: String
   ): String
   tripShortName: String
+  tripLongName: String
+  realtimeTripId: String
   "Whether the vehicle running this trip can be boarded by a wheelchair"
   wheelchairAccessible: WheelchairBoarding
 }
