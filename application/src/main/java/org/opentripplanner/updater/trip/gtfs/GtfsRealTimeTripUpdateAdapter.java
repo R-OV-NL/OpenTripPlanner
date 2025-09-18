@@ -715,7 +715,10 @@ public class GtfsRealTimeTripUpdateAdapter {
     final FeedScopedId tripId,
     final LocalDate serviceDate
   ) {
-    final TripPattern pattern = snapshotManager.getNewTripPatternForModifiedTrip(tripId, serviceDate);
+    final TripPattern pattern = snapshotManager.getNewTripPatternForModifiedTrip(
+      tripId,
+      serviceDate
+    );
     if (pattern == null) {
       return;
     }

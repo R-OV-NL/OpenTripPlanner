@@ -1,7 +1,7 @@
 package org.opentripplanner.updater.trip.gtfs.moduletests.addition;
 
-import static com.google.transit.realtime.GtfsRealtime.TripDescriptor.ScheduleRelationship.REPLACEMENT;
 import static com.google.transit.realtime.GtfsRealtime.TripDescriptor.ScheduleRelationship.CANCELED;
+import static com.google.transit.realtime.GtfsRealtime.TripDescriptor.ScheduleRelationship.REPLACEMENT;
 import static com.google.transit.realtime.GtfsRealtime.TripDescriptor.ScheduleRelationship.SCHEDULED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -101,7 +101,9 @@ class ReplacementSkippedSequenceTest implements RealtimeTestConstants {
     assertNotNull(newPattern);
 
     // Scheduled pattern for today should be deleted
-    var originalPattern = env.getTransitService().findPattern(env.getTransitService().getTrip(id(TRIP_2_ID)));
+    var originalPattern = env
+      .getTransitService()
+      .findPattern(env.getTransitService().getTrip(id(TRIP_2_ID)));
     var originalToday = snapshot.resolve(originalPattern, SERVICE_DATE).getTripTimes(id(TRIP_2_ID));
     org.junit.jupiter.api.Assertions.assertNotNull(originalToday);
     org.junit.jupiter.api.Assertions.assertTrue(originalToday.isDeleted());
@@ -156,10 +158,17 @@ class ReplacementSkippedSequenceTest implements RealtimeTestConstants {
 
     // After first REPLACEMENT a modified pattern should exist, and the original for today is deleted
     var snapshotAfterRepl1 = env.getTimetableSnapshot();
-    var newPatternAfterRepl1 = snapshotAfterRepl1.getNewTripPatternForModifiedTrip(id(TRIP_2_ID), SERVICE_DATE);
+    var newPatternAfterRepl1 = snapshotAfterRepl1.getNewTripPatternForModifiedTrip(
+      id(TRIP_2_ID),
+      SERVICE_DATE
+    );
     org.junit.jupiter.api.Assertions.assertNotNull(newPatternAfterRepl1);
-    var originalPattern1 = env.getTransitService().findPattern(env.getTransitService().getTrip(id(TRIP_2_ID)));
-    var originalToday1 = snapshotAfterRepl1.resolve(originalPattern1, SERVICE_DATE).getTripTimes(id(TRIP_2_ID));
+    var originalPattern1 = env
+      .getTransitService()
+      .findPattern(env.getTransitService().getTrip(id(TRIP_2_ID)));
+    var originalToday1 = snapshotAfterRepl1
+      .resolve(originalPattern1, SERVICE_DATE)
+      .getTripTimes(id(TRIP_2_ID));
     org.junit.jupiter.api.Assertions.assertNotNull(originalToday1);
     org.junit.jupiter.api.Assertions.assertTrue(originalToday1.isDeleted());
 
@@ -211,7 +220,10 @@ class ReplacementSkippedSequenceTest implements RealtimeTestConstants {
 
     // After this replacement, ensure trip is not canceled and modified exists
     var snapshotAfterReplAfterCancel = env.getTimetableSnapshot();
-    var patternAfterReplAfterCancel = snapshotAfterReplAfterCancel.getNewTripPatternForModifiedTrip(id(TRIP_2_ID), SERVICE_DATE);
+    var patternAfterReplAfterCancel = snapshotAfterReplAfterCancel.getNewTripPatternForModifiedTrip(
+      id(TRIP_2_ID),
+      SERVICE_DATE
+    );
     org.junit.jupiter.api.Assertions.assertNotNull(patternAfterReplAfterCancel);
     var ttAfterReplAfterCancel = snapshotAfterReplAfterCancel
       .resolve(patternAfterReplAfterCancel, SERVICE_DATE)
@@ -226,7 +238,9 @@ class ReplacementSkippedSequenceTest implements RealtimeTestConstants {
 
     // Final assertions: scheduled is deleted for today, and latest state is canceled/deleted
     var snapshot = env.getTimetableSnapshot();
-    var originalPattern = env.getTransitService().findPattern(env.getTransitService().getTrip(id(TRIP_2_ID)));
+    var originalPattern = env
+      .getTransitService()
+      .findPattern(env.getTransitService().getTrip(id(TRIP_2_ID)));
     var originalToday = snapshot.resolve(originalPattern, SERVICE_DATE).getTripTimes(id(TRIP_2_ID));
     org.junit.jupiter.api.Assertions.assertNotNull(originalToday);
     org.junit.jupiter.api.Assertions.assertTrue(originalToday.isCanceledOrDeleted());
@@ -241,5 +255,3 @@ class ReplacementSkippedSequenceTest implements RealtimeTestConstants {
     }
   }
 }
-
-
