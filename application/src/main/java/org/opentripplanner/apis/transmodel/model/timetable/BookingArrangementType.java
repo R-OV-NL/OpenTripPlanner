@@ -39,6 +39,14 @@ public class BookingArrangementType {
           .name("url")
           .description("Url for contact")
           .type(Scalars.GraphQLString) //
+          .dataFetcher(environment -> ((contactInfo(environment)).getInfoUrl()))
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
+          .name("bookingUrl")
+          .description("Url for booking")
+          .type(Scalars.GraphQLString) //
           .dataFetcher(environment -> ((contactInfo(environment)).getBookingUrl()))
           .build()
       )
@@ -68,6 +76,28 @@ public class BookingArrangementType {
           .description("How should service be booked?")
           .type(new GraphQLList(EnumTypes.BOOKING_METHOD))
           .dataFetcher(environment -> ((bookingInfo(environment)).bookingMethods()))
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
+          .name("earliestBookingTime")
+          .description("Earliest time the service can be booked. ISO 8601 local time")
+          .type(TransmodelScalars.LOCAL_TIME_SCALAR)
+          .dataFetcher(environment -> {
+            final BookingTime t = (bookingInfo(environment)).getEarliestBookingTime();
+            return t == null ? null : t.getTime();
+          })
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
+          .name("earliestBookingDay")
+          .description("Days prior for earliest booking time")
+          .type(Scalars.GraphQLInt)
+          .dataFetcher(environment -> {
+            final BookingTime t = (bookingInfo(environment)).getEarliestBookingTime();
+            return t == null ? null : t.getDaysPrior();
+          })
           .build()
       )
       .field(
@@ -110,10 +140,34 @@ public class BookingArrangementType {
       )
       .field(
         GraphQLFieldDefinition.newFieldDefinition()
+          .name("maximumBookingPeriod")
+          .description("Maximum period in advance service can be booked as a ISO 8601 duration")
+          .type(Scalars.GraphQLString)
+          .dataFetcher(environment -> ((bookingInfo(environment)).getMaximumBookingNotice()))
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("bookingNote")
           .description("Textual description of booking arrangement for service")
           .type(Scalars.GraphQLString)
           .dataFetcher(environment -> ((bookingInfo(environment)).getMessage()))
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
+          .name("pickupNote")
+          .description("A message specific to the pick up")
+          .type(Scalars.GraphQLString)
+          .dataFetcher(environment -> ((bookingInfo(environment)).getPickupMessage()))
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
+          .name("dropOffNote")
+          .description("A message specific to the drop off")
+          .type(Scalars.GraphQLString)
+          .dataFetcher(environment -> ((bookingInfo(environment)).getDropOffMessage()))
           .build()
       )
       .field(
