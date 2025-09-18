@@ -61,7 +61,6 @@ import org.opentripplanner.updater.trip.TimetableSnapshotManager;
 import org.opentripplanner.updater.trip.UpdateIncrementality;
 import org.opentripplanner.updater.trip.gtfs.model.AddedRoute;
 import org.opentripplanner.updater.trip.gtfs.model.TripUpdate;
-import org.opentripplanner.utils.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -656,6 +655,13 @@ public class GtfsRealTimeTripUpdateAdapter {
     RealTimeTripTimes tripTimes = tripTimesWithStopPattern.tripTimes();
     Trip trip = tripTimes.getTrip();
 
+    // If we previously created a modified pattern for this trip (due to earlier SCHEDULED updates),
+    // ensure it is removed before applying a REPLACEMENT update. Otherwise, both the old modified
+    // and the new replacement variants can coexist and be considered by routing.
+    if (realTimeState == RealTimeState.MODIFIED) {
+      cancelPreviouslyModifiedTrip(trip.getId(), serviceDate);
+    }
+
     if (realTimeState == RealTimeState.MODIFIED) {
       // Mark scheduled trip as DELETED
       cancelScheduledTrip(trip.getId(), serviceDate, CancelationType.DELETE);
@@ -695,6 +701,36 @@ public class GtfsRealTimeTripUpdateAdapter {
         hasANewRouteBeenCreated
       )
     );
+  }
+
+  /**
+   * Cancel a previously MODIFIED (replacement of a scheduled trip using a realtime-created pattern)
+   * instance of the given trip on the given service date, if present.
+   *
+   * This mirrors {@link #cancelPreviouslyAddedTrip} but targets modified trips which were created
+   * when handling SCHEDULED TripUpdates that changed pickup/dropoff or assigned stops, thus
+   * producing a realtime-created pattern.
+   */
+  private void cancelPreviouslyModifiedTrip(
+    final FeedScopedId tripId,
+    final LocalDate serviceDate
+  ) {
+    final TripPattern pattern = snapshotManager.getNewTripPatternForModifiedTrip(tripId, serviceDate);
+    if (pattern == null) {
+      return;
+    }
+
+    final Timetable timetable = snapshotManager.resolve(pattern, serviceDate);
+    var tripTimes = timetable.getTripTimes(tripId);
+    if (tripTimes == null) {
+      debug(tripId, serviceDate, "Could not cancel previously modified trip on {}", serviceDate);
+      return;
+    }
+
+    // Delete the previously modified instance so it is no longer offered for routing
+    final RealTimeTripTimesBuilder builder = tripTimes.createRealTimeFromScheduledTimes();
+    builder.deleteTrip();
+    snapshotManager.updateBuffer(new RealTimeTripUpdate(pattern, builder.build(), serviceDate));
   }
 
   /**
