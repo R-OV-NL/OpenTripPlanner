@@ -374,7 +374,7 @@ public class TripTimeOnDate {
   }
 
   public String getScheduledPlatform() {
-    var scheduled = tripTimes.getScheduledPlatform(stopIndex);
+    var scheduled = tripTimes.getScheduledPlatform(stopPosition);
     if (scheduled != null) {
       return scheduled;
     }
@@ -383,7 +383,7 @@ public class TripTimeOnDate {
   }
 
   public String getActualPlatform() {
-    return tripTimes.getActualPlatform(stopIndex);
+    return tripTimes.getActualPlatform(stopPosition);
   }
 
   public StopTimeKey getStopTimeKey() {
