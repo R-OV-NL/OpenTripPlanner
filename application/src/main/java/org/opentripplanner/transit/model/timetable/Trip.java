@@ -5,7 +5,6 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Objects.requireNonNullElse;
 import static org.opentripplanner.utils.lang.ObjectUtils.ifNotNull;
 
-import com.esotericsoftware.kryo.util.Null;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.opentripplanner.framework.i18n.I18NString;
