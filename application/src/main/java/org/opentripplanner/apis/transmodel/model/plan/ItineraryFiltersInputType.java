@@ -148,9 +148,7 @@ public class ItineraryFiltersInputType {
         GraphQLInputObjectField.newInputObjectField()
           .type(Scalars.GraphQLBoolean)
           .name(REQUIRE_FLEX_ITINERARIES)
-          .description(
-            "If true, remove itineraries that do not include any flexible legs."
-          )
+          .description("If true, remove itineraries that do not include any flexible legs.")
           .defaultValue(dft.requireFlexItineraries())
           .build()
       )
