@@ -99,6 +99,7 @@ public class RouteRequestToFilterChainMapper {
       .withRemoveWalkAllTheWayResults(removeWalkAllTheWayResults)
       .withRemoveTransitIfWalkingIsBetter(true)
       .withFilterDirectFlexBySearchWindow(params.filterDirectFlexBySearchWindow())
+      .withRequireFlexItineraries(params.requireFlexItineraries())
       .withDebugEnabled(params.debug());
 
     if (!request.preferences().transit().relaxTransitGroupPriority().isNormal()) {
