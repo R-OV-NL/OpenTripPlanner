@@ -32,6 +32,7 @@ public final class ItineraryFilterPreferences {
   private final TransitGeneralizedCostFilterParams transitGeneralizedCostLimit;
   private final CostLinearFunction removeTransitWithHigherCostThanBestOnStreetOnly;
   private final boolean filterDirectFlexBySearchWindow;
+  private final boolean requireFlexItineraries;
 
   private ItineraryFilterPreferences() {
     this.accessibilityScore = false;
@@ -54,6 +55,7 @@ public final class ItineraryFilterPreferences {
       1.3
     );
     this.filterDirectFlexBySearchWindow = true;
+    this.requireFlexItineraries = false;
   }
 
   private ItineraryFilterPreferences(Builder builder) {
@@ -78,6 +80,7 @@ public final class ItineraryFilterPreferences {
       builder.removeTransitWithHigherCostThanBestOnStreetOnly
     );
     this.filterDirectFlexBySearchWindow = builder.filterDirectFlexBySearchWindow;
+    this.requireFlexItineraries = builder.requireFlexItineraries;
   }
 
   public static Builder of() {
@@ -144,6 +147,10 @@ public final class ItineraryFilterPreferences {
     return filterDirectFlexBySearchWindow;
   }
 
+  public boolean requireFlexItineraries() {
+    return requireFlexItineraries;
+  }
+
   @Override
   public String toString() {
     return ToStringBuilder.of(ItineraryFilterPreferences.class)
@@ -191,6 +198,7 @@ public final class ItineraryFilterPreferences {
         removeItinerariesWithSameRoutesAndStops
       )
       .addBoolIfTrue("filterDirectFlexBySearchWindow", filterDirectFlexBySearchWindow)
+      .addBoolIfTrue("requireFlexItineraries", requireFlexItineraries)
       .toString();
   }
 
@@ -220,7 +228,8 @@ public final class ItineraryFilterPreferences {
         that.removeTransitWithHigherCostThanBestOnStreetOnly
       ) &&
       Objects.equals(transitGeneralizedCostLimit, that.transitGeneralizedCostLimit) &&
-      filterDirectFlexBySearchWindow == that.filterDirectFlexBySearchWindow
+      filterDirectFlexBySearchWindow == that.filterDirectFlexBySearchWindow &&
+      requireFlexItineraries == that.requireFlexItineraries
     );
   }
 
@@ -240,7 +249,8 @@ public final class ItineraryFilterPreferences {
       removeItinerariesWithSameRoutesAndStops,
       transitGeneralizedCostLimit,
       removeTransitWithHigherCostThanBestOnStreetOnly,
-      filterDirectFlexBySearchWindow
+      filterDirectFlexBySearchWindow,
+      requireFlexItineraries
     );
   }
 
@@ -261,6 +271,7 @@ public final class ItineraryFilterPreferences {
     private TransitGeneralizedCostFilterParams transitGeneralizedCostLimit;
     private CostLinearFunction removeTransitWithHigherCostThanBestOnStreetOnly;
     private boolean filterDirectFlexBySearchWindow;
+    private boolean requireFlexItineraries;
 
     public ItineraryFilterPreferences original() {
       return original;
@@ -364,6 +375,7 @@ public final class ItineraryFilterPreferences {
       this.removeTransitWithHigherCostThanBestOnStreetOnly =
         original.removeTransitWithHigherCostThanBestOnStreetOnly;
       this.filterDirectFlexBySearchWindow = original.filterDirectFlexBySearchWindow;
+      this.requireFlexItineraries = original.requireFlexItineraries;
     }
 
     public Builder apply(Consumer<Builder> body) {
@@ -378,6 +390,11 @@ public final class ItineraryFilterPreferences {
 
     public Builder withFilterDirectFlexBySearchWindow(boolean filterDirectFlexBySearchWindow) {
       this.filterDirectFlexBySearchWindow = filterDirectFlexBySearchWindow;
+      return this;
+    }
+
+    public Builder withRequireFlexItineraries(boolean requireFlexItineraries) {
+      this.requireFlexItineraries = requireFlexItineraries;
       return this;
     }
   }
