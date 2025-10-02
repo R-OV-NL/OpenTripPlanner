@@ -4265,6 +4265,15 @@ input InputModeWeight {
   TROLLEYBUS: Float
 }
 
+input InputPreferred {
+  "Not implemented"
+  agencies: String
+  "Not implemented"
+  otherThanPreferredRoutesPenalty: Int
+  "Not implemented"
+  routes: String
+}
+
 """
 Relative importances of optimization factors. Only effective for bicycling legs.
 Invariant: `timeFactor + slopeFactor + safetyFactor == 1`
