@@ -36,6 +36,7 @@ import org.opentripplanner.transit.model.timetable.Trip;
 import org.opentripplanner.transit.model.timetable.TripTimesFactory;
 import org.opentripplanner.updater.spi.DataValidationExceptionMapper;
 import org.opentripplanner.updater.spi.UpdateError;
+import org.opentripplanner.updater.trip.gtfs.model.RealtimePlatforms;
 import org.opentripplanner.updater.trip.gtfs.model.StopTimeUpdate;
 import org.opentripplanner.updater.trip.gtfs.model.TripTimesPatch;
 import org.opentripplanner.updater.trip.gtfs.model.TripUpdate;
@@ -136,6 +137,16 @@ class TripTimesUpdater {
         update.pickup().ifPresent(x -> updatedPickups.put(index, x));
         update.dropoff().ifPresent(x -> updatedDropoffs.put(index, x));
         update.assignedStopId().ifPresent(x -> replacedStopIndices.put(index, x));
+
+        var realtimePlatforms = RealtimePlatforms.ofStopTimeUpdate(update);
+        if (realtimePlatforms != null) {
+          if (realtimePlatforms.scheduledPlatform() != null) {
+            builder.withScheduledPlatform(index, realtimePlatforms.scheduledPlatform());
+          }
+          if (realtimePlatforms.actualPlatform() != null) {
+            builder.withActualPlatform(index, realtimePlatforms.actualPlatform());
+          }
+        }
 
         var scheduleRelationship = update.scheduleRelationship();
         // Handle each schedule relationship case
@@ -344,6 +355,17 @@ class TripTimesUpdater {
       }
       if (builder.getDepartureTime(stopIndex) == null) {
         builder.withDepartureDelay(stopIndex, 0);
+      }
+
+      // Set platform information for NEW/REPLACEMENT trips as well
+      var realtimePlatforms = RealtimePlatforms.ofStopTimeUpdate(addedStopTime);
+      if (realtimePlatforms != null) {
+        if (realtimePlatforms.scheduledPlatform() != null) {
+          builder.withScheduledPlatform(stopIndex, realtimePlatforms.scheduledPlatform());
+        }
+        if (realtimePlatforms.actualPlatform() != null) {
+          builder.withActualPlatform(stopIndex, realtimePlatforms.actualPlatform());
+        }
       }
     }
 

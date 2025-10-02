@@ -88,6 +88,38 @@ public class EstimatedCallType {
       )
       .field(
         GraphQLFieldDefinition.newFieldDefinition()
+          .name("actualPlatform")
+          .type(Scalars.GraphQLString)
+          .description(
+            "Actual platform at which the vehicle is expected to arrive/depart. Updated with real time information if available."
+          )
+          .dataFetcher(environment -> {
+            TripTimeOnDate tripTimeOnDate = environment.getSource();
+            if (tripTimeOnDate == null) {
+              return null;
+            }
+            return tripTimeOnDate.getActualPlatform();
+          })
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
+          .name("expectedPlatform")
+          .type(Scalars.GraphQLString)
+          .description(
+            "Scheduled platform at which the vehicle is expected to arrive/depart. Not affected by real time updates."
+          )
+          .dataFetcher(environment -> {
+            TripTimeOnDate tripTimeOnDate = environment.getSource();
+            if (tripTimeOnDate == null) {
+              return null;
+            }
+            return tripTimeOnDate.getActualPlatform();
+          })
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("actualArrivalTime")
           .type(dateTimeScalar)
           .description(
