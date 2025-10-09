@@ -99,6 +99,11 @@ public class StoptimeImpl implements GraphQLDataFetchers.GraphQLStoptime {
   }
 
   @Override
+  public DataFetcher<String> scheduledPlatform() {
+    return environment -> getSource(environment).getScheduledPlatform();
+  }
+
+  @Override
   public DataFetcher<Trip> trip() {
     return environment -> getSource(environment).getTrip();
   }

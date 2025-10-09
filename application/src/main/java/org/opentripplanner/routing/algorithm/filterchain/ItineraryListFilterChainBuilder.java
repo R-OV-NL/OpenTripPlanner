@@ -33,6 +33,7 @@ import org.opentripplanner.routing.algorithm.filterchain.filters.system.mcmax.Mc
 import org.opentripplanner.routing.algorithm.filterchain.filters.transit.DecorateTransitAlert;
 import org.opentripplanner.routing.algorithm.filterchain.filters.transit.KeepItinerariesWithFewestTransfers;
 import org.opentripplanner.routing.algorithm.filterchain.filters.transit.RemoveItinerariesWithShortStreetLeg;
+import org.opentripplanner.routing.algorithm.filterchain.filters.transit.RemoveNonFlexItineraries;
 import org.opentripplanner.routing.algorithm.filterchain.filters.transit.RemoveTransitIfStreetOnlyIsBetter;
 import org.opentripplanner.routing.algorithm.filterchain.filters.transit.RemoveTransitIfWalkingIsBetter;
 import org.opentripplanner.routing.algorithm.filterchain.filters.transit.TransitGeneralizedCostFilter;
@@ -93,6 +94,7 @@ public class ItineraryListFilterChainBuilder {
   private Cost generalizedCostMaxLimit = null;
   private boolean transitGroupPriorityUsed = false;
   private boolean filterDirectFlexBySearchWindow = true;
+  private boolean requireFlexItineraries = false;
 
   /**
    * Sandbox filters which decorate the itineraries with extra information.
@@ -385,6 +387,11 @@ public class ItineraryListFilterChainBuilder {
     return this;
   }
 
+  public ItineraryListFilterChainBuilder withRequireFlexItineraries(boolean require) {
+    this.requireFlexItineraries = require;
+    return this;
+  }
+
   public ItineraryListFilterChainBuilder withTransitAlerts(
     TransitAlertService transitAlertService,
     Function<Station, MultiModalStation> getMultiModalStation
@@ -463,6 +470,11 @@ public class ItineraryListFilterChainBuilder {
 
       if (removeWalkAllTheWayResults) {
         addRemoveFilter(filters, new RemoveWalkOnlyFilter());
+      }
+
+      // If requested, remove itineraries that do not include any flex legs
+      if (requireFlexItineraries) {
+        addRemoveFilter(filters, new RemoveNonFlexItineraries());
       }
 
       if (bikeRentalDistanceRatio > 0) {

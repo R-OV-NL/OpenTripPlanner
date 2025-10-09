@@ -16,6 +16,8 @@ public class TripBuilder extends AbstractEntityBuilder<Trip, TripBuilder> {
   private Route route;
   private FeedScopedId serviceId;
   private String shortName;
+  private String longName;
+  private String realtimeTripId;
   private TransitMode mode;
   private String netexSubmode;
   private I18NString headsign;
@@ -49,6 +51,8 @@ public class TripBuilder extends AbstractEntityBuilder<Trip, TripBuilder> {
     this.carsAllowed = original.getCarsAllowed();
     this.wheelchairBoarding = original.getWheelchairBoarding();
     this.netexInternalPlanningCode = original.getNetexInternalPlanningCode();
+    this.longName = original.getLongName();
+    this.realtimeTripId = original.getRealtimeTripId();
   }
 
   public Operator getOperator() {
@@ -84,6 +88,24 @@ public class TripBuilder extends AbstractEntityBuilder<Trip, TripBuilder> {
 
   public TripBuilder withShortName(String shortName) {
     this.shortName = shortName;
+    return this;
+  }
+
+  public String getLongName() {
+    return longName;
+  }
+
+  public TripBuilder withLongName(String longName) {
+    this.longName = longName;
+    return this;
+  }
+
+  public String getRealtimeTripId() {
+    return realtimeTripId;
+  }
+
+  public TripBuilder withRealtimeTripId(String realtimeTripId) {
+    this.realtimeTripId = realtimeTripId;
     return this;
   }
 

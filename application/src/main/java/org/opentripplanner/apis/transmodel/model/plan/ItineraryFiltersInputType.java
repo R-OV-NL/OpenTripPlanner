@@ -26,6 +26,7 @@ public class ItineraryFiltersInputType {
     "groupedOtherThanSameLegsMaxCostMultiplier";
   private static final String GROUP_SIMILARITY_KEEP_N_ITINERARIES =
     "groupSimilarityKeepNumOfItineraries";
+  private static final String REQUIRE_FLEX_ITINERARIES = "requireFlexItineraries";
 
   public static GraphQLInputObjectType create(ItineraryFilterPreferences dft) {
     return GraphQLInputObjectType.newInputObject()
@@ -143,6 +144,14 @@ public class ItineraryFiltersInputType {
           .defaultValue(dft.debug())
           .build()
       )
+      .field(
+        GraphQLInputObjectField.newInputObjectField()
+          .type(Scalars.GraphQLBoolean)
+          .name(REQUIRE_FLEX_ITINERARIES)
+          .description("If true, remove itineraries that do not include any flexible legs.")
+          .defaultValue(dft.requireFlexItineraries())
+          .build()
+      )
       .build();
   }
 
@@ -174,6 +183,7 @@ public class ItineraryFiltersInputType {
       )
     );
     setField(callWith, DEBUG, builder::withDebug);
+    setField(callWith, REQUIRE_FLEX_ITINERARIES, builder::withRequireFlexItineraries);
   }
 
   private static <T> void setField(

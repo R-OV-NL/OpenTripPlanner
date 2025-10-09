@@ -238,4 +238,8 @@ public final class StopTimeUpdate {
         ? OptionalInt.of((int) (stopTimeEvent.getTime() - stopTimeEvent.getScheduledTime()))
         : OptionalInt.empty();
   }
+
+  GtfsRealtime.TripUpdate.StopTimeUpdate original() {
+    return stopTimeUpdate;
+  }
 }

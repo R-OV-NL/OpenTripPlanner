@@ -38,6 +38,9 @@ public final class RealTimeTripTimes implements TripTimes {
   private final OccupancyStatus[] occupancyStatus;
   private final Accessibility wheelchairAccessibility;
 
+  private final String[] scheduledPlatforms;
+  private final String[] actualPlatforms;
+
   RealTimeTripTimes(RealTimeTripTimesBuilder builder) {
     scheduledTripTimes = builder.scheduledTripTimes();
     arrivalTimes = builder.arrivalTimes();
@@ -48,6 +51,8 @@ public final class RealTimeTripTimes implements TripTimes {
     stopHeadsigns = builder.stopHeadsigns();
     occupancyStatus = builder.occupancyStatus();
     wheelchairAccessibility = builder.wheelchairAccessibility();
+    scheduledPlatforms = builder.scheduledPlatforms();
+    actualPlatforms = builder.actualPlatforms();
     validateNonIncreasingTimes();
   }
 
@@ -64,6 +69,8 @@ public final class RealTimeTripTimes implements TripTimes {
     this.stopHeadsigns = original.stopHeadsigns;
     this.occupancyStatus = original.occupancyStatus;
     this.wheelchairAccessibility = original.wheelchairAccessibility;
+    this.scheduledPlatforms = original.scheduledPlatforms;
+    this.actualPlatforms = original.actualPlatforms;
   }
 
   /**
@@ -82,6 +89,8 @@ public final class RealTimeTripTimes implements TripTimes {
     this.stopHeadsigns = original.stopHeadsigns;
     this.occupancyStatus = original.occupancyStatus;
     this.wheelchairAccessibility = original.wheelchairAccessibility;
+    this.scheduledPlatforms = original.scheduledPlatforms;
+    this.actualPlatforms = original.actualPlatforms;
   }
 
   ScheduledTripTimes scheduledTripTimes() {
@@ -310,6 +319,16 @@ public final class RealTimeTripTimes implements TripTimes {
   }
 
   @Override
+  public @Nullable String getScheduledPlatform(int stop) {
+    return scheduledPlatforms == null ? null : scheduledPlatforms[stop];
+  }
+
+  @Override
+  public @Nullable String getActualPlatform(int stop) {
+    return actualPlatforms == null ? null : actualPlatforms[stop];
+  }
+
+  @Override
   public boolean isTimepoint(final int stopIndex) {
     return scheduledTripTimes.isTimepoint(stopIndex);
   }
@@ -378,7 +397,9 @@ public final class RealTimeTripTimes implements TripTimes {
       tripHeadsign,
       Arrays.hashCode(stopHeadsigns),
       Arrays.hashCode(occupancyStatus),
-      wheelchairAccessibility
+      wheelchairAccessibility,
+      Arrays.hashCode(scheduledPlatforms),
+      Arrays.hashCode(actualPlatforms)
     );
   }
 }

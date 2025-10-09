@@ -390,6 +390,24 @@ public class LegType {
       )
       .field(
         GraphQLFieldDefinition.newFieldDefinition()
+          .name("pickupType")
+          .description("Whether boarding this leg is possible only with special arrangements.")
+          .type(EnumTypes.PICKUP_DROPOFF_TYPE)
+          .dataFetcher(env -> leg(env).boardRule())
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
+          .name("dropoffType")
+          .description(
+            "Whether alighting from this leg is possible only with special arrangements."
+          )
+          .type(EnumTypes.PICKUP_DROPOFF_TYPE)
+          .dataFetcher(env -> leg(env).alightRule())
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("bikeRentalNetworks")
           .type(new GraphQLNonNull(new GraphQLList(Scalars.GraphQLString)))
           .dataFetcher(env ->

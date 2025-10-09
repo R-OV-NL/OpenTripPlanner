@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import javax.annotation.Nullable;
@@ -36,6 +37,7 @@ import org.opentripplanner.transit.model.timetable.Trip;
 import org.opentripplanner.transit.model.timetable.TripTimesFactory;
 import org.opentripplanner.updater.spi.DataValidationExceptionMapper;
 import org.opentripplanner.updater.spi.UpdateError;
+import org.opentripplanner.updater.trip.gtfs.model.RealtimePlatforms;
 import org.opentripplanner.updater.trip.gtfs.model.StopTimeUpdate;
 import org.opentripplanner.updater.trip.gtfs.model.TripTimesPatch;
 import org.opentripplanner.updater.trip.gtfs.model.TripUpdate;
@@ -132,10 +134,36 @@ class TripTimesUpdater {
       }
 
       if (match) {
-        update.stopHeadsign().ifPresent(x -> builder.withStopHeadsign(index, x));
-        update.pickup().ifPresent(x -> updatedPickups.put(index, x));
-        update.dropoff().ifPresent(x -> updatedDropoffs.put(index, x));
-        update.assignedStopId().ifPresent(x -> replacedStopIndices.put(index, x));
+        var scheduledStopId = timetable.getPattern().getStop(i).getId().getId();
+        var scheduledStopHeadsign = tripTimes.getHeadsign(i);
+        var scheduledPickup = timetable.getPattern().getBoardType(i);
+        var scheduledDropoff = timetable.getPattern().getAlightType(i);
+        update
+          .stopHeadsign()
+          .filter(x -> !Objects.equals(x, scheduledStopHeadsign))
+          .ifPresent(x -> builder.withStopHeadsign(index, x));
+        update
+          .pickup()
+          .filter(x -> x != scheduledPickup)
+          .ifPresent(x -> updatedPickups.put(index, x));
+        update
+          .dropoff()
+          .filter(x -> x != scheduledDropoff)
+          .ifPresent(x -> updatedDropoffs.put(index, x));
+        update
+          .assignedStopId()
+          .filter(x -> !Objects.equals(x, scheduledStopId))
+          .ifPresent(x -> replacedStopIndices.put(index, x));
+
+        var realtimePlatforms = RealtimePlatforms.ofStopTimeUpdate(update);
+        if (realtimePlatforms != null) {
+          if (realtimePlatforms.scheduledPlatform() != null) {
+            builder.withScheduledPlatform(index, realtimePlatforms.scheduledPlatform());
+          }
+          if (realtimePlatforms.actualPlatform() != null) {
+            builder.withActualPlatform(index, realtimePlatforms.actualPlatform());
+          }
+        }
 
         var scheduleRelationship = update.scheduleRelationship();
         // Handle each schedule relationship case
@@ -344,6 +372,17 @@ class TripTimesUpdater {
       }
       if (builder.getDepartureTime(stopIndex) == null) {
         builder.withDepartureDelay(stopIndex, 0);
+      }
+
+      // Set platform information for NEW/REPLACEMENT trips as well
+      var realtimePlatforms = RealtimePlatforms.ofStopTimeUpdate(addedStopTime);
+      if (realtimePlatforms != null) {
+        if (realtimePlatforms.scheduledPlatform() != null) {
+          builder.withScheduledPlatform(stopIndex, realtimePlatforms.scheduledPlatform());
+        }
+        if (realtimePlatforms.actualPlatform() != null) {
+          builder.withActualPlatform(stopIndex, realtimePlatforms.actualPlatform());
+        }
       }
     }
 

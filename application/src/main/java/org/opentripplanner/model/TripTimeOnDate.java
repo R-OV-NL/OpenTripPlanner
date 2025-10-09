@@ -373,6 +373,19 @@ public class TripTimeOnDate {
       : tripPattern.getAlightType(stopPosition);
   }
 
+  public String getScheduledPlatform() {
+    var scheduled = tripTimes.getScheduledPlatform(stopPosition);
+    if (scheduled != null) {
+      return scheduled;
+    }
+    var stop = getStop();
+    return stop == null ? null : stop.getPlatformCode();
+  }
+
+  public String getActualPlatform() {
+    return tripTimes.getActualPlatform(stopPosition);
+  }
+
   public StopTimeKey getStopTimeKey() {
     return StopTimeKey.of(tripTimes.getTrip().getId(), stopPosition).build();
   }

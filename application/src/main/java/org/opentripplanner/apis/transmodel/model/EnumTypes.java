@@ -6,6 +6,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Function;
 import org.opentripplanner.framework.doc.DocumentedEnum;
+import org.opentripplanner.model.PickDrop;
 import org.opentripplanner.model.plan.VertexType;
 import org.opentripplanner.model.plan.walkstep.AbsoluteDirection;
 import org.opentripplanner.model.plan.walkstep.RelativeDirection;
@@ -86,6 +87,15 @@ public class EnumTypes {
     .value("online", BookingMethod.ONLINE)
     .value("phoneAtStop", BookingMethod.PHONE_AT_STOP)
     .value("text", BookingMethod.TEXT_MESSAGE)
+    .build();
+
+  public static final GraphQLEnumType PICKUP_DROPOFF_TYPE = GraphQLEnumType.newEnum()
+    .name("PickupDropoffType")
+    .value("scheduled", PickDrop.SCHEDULED)
+    .value("none", PickDrop.NONE)
+    .value("callAgency", PickDrop.CALL_AGENCY)
+    .value("coordinateWithDriver", PickDrop.COORDINATE_WITH_DRIVER)
+    .value("cancelled", PickDrop.CANCELLED)
     .build();
 
   public static final GraphQLEnumType DIRECTION_TYPE = GraphQLEnumType.newEnum()

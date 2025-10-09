@@ -55,6 +55,12 @@ public final class Trip extends AbstractTransitEntity<Trip, TripBuilder> impleme
   private final String shortName;
 
   @Nullable
+  private final String longName;
+
+  @Nullable
+  private final String realtimeTripId;
+
+  @Nullable
   private final I18NString headsign;
 
   @Nullable
@@ -89,6 +95,8 @@ public final class Trip extends AbstractTransitEntity<Trip, TripBuilder> impleme
     this.operator = ifNotNull(builder.getOperator(), route.getOperator());
     this.serviceId = builder.getServiceId();
     this.shortName = builder.getShortName();
+    this.longName = builder.getLongName();
+    this.realtimeTripId = builder.getRealtimeTripId();
     this.headsign = builder.getHeadsign();
     this.shapeId = builder.getShapeId();
     this.gtfsBlockId = builder.getGtfsBlockId();
@@ -129,6 +137,16 @@ public final class Trip extends AbstractTransitEntity<Trip, TripBuilder> impleme
   @Nullable
   public String getShortName() {
     return shortName;
+  }
+
+  @Nullable
+  public String getLongName() {
+    return longName;
+  }
+
+  @Nullable
+  public String getRealtimeTripId() {
+    return realtimeTripId;
   }
 
   public TransitMode getMode() {

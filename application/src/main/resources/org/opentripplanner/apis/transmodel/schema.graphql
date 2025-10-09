@@ -132,12 +132,22 @@ type BookingArrangement {
   bookingMethods: [BookingMethod]
   "Textual description of booking arrangement for service"
   bookingNote: String
+  "A message specific to the drop off"
+  dropOffNote: String
+  "Days prior for earliest booking time"
+  earliestBookingDay: Int
+  "Earliest time the service can be booked. ISO 8601 local time"
+  earliestBookingTime: LocalTime
   "How many days prior to the travel the service needs to be booked"
   latestBookingDay: Int
   "Latest time the service can be booked. ISO 8601 timestamp"
   latestBookingTime: LocalTime
+  "Maximum period in advance service can be booked as a ISO 8601 duration"
+  maximumBookingPeriod: String
   "Minimum period in advance service can be booked as a ISO 8601 duration"
   minimumBookingPeriod: String
+  "A message specific to the pick up"
+  pickupNote: String
 }
 
 type Branding {
@@ -155,6 +165,8 @@ type Branding {
 }
 
 type Contact {
+  "Url for booking"
+  bookingUrl: String
   "Name of person to contact"
   contactPerson: String
   "Email adress for contact"
@@ -222,6 +234,8 @@ type EstimatedCall {
   actualArrivalTime: DateTime
   "Actual time of departure from quay. Updated with real time information if available."
   actualDepartureTime: DateTime
+  "Actual platform at which the vehicle is expected to arrive/depart. Updated with real time information if available."
+  actualPlatform: String
   "Scheduled time of arrival at quay. Not affected by read time updated"
   aimedArrivalTime: DateTime!
   "Scheduled time of departure from quay. Not affected by read time updated"
@@ -238,6 +252,8 @@ type EstimatedCall {
   expectedArrivalTime: DateTime!
   "Expected time of departure from quay. Updated with real time information if available. Will be null if an actualDepartureTime exists"
   expectedDepartureTime: DateTime!
+  "Scheduled platform at which the vehicle is expected to arrive/depart. Not affected by real time updates."
+  expectedPlatform: String
   "Whether vehicle may be alighted at quay."
   forAlighting: Boolean!
   "Whether vehicle may be boarded at quay."
@@ -326,6 +342,8 @@ type Leg {
   directDuration: Long!
   "The distance traveled while traversing the leg in meters."
   distance: Float!
+  "Whether alighting from this leg is possible only with special arrangements."
+  dropoffType: PickupDropoffType
   "The leg's duration in seconds"
   duration: Long!
   """
@@ -367,6 +385,8 @@ type Leg {
   ): [Leg!]
   "For ride legs, the operator used for this legs. For non-ride legs, null."
   operator: Operator
+  "Whether boarding this leg is possible only with special arrangements."
+  pickupType: PickupDropoffType
   "The leg's geometry."
   pointsOnLink: PointsOnLink
   "Fetch the previous legs, which can be used to replace this leg. The replacement legs do arrive/depart from/to the same stop places. It might be necessary to change other legs in an itinerary in order to be able to ride the returned legs."
@@ -1748,6 +1768,14 @@ enum OccupancyStatus {
   standingRoomOnly
 }
 
+enum PickupDropoffType {
+  callAgency
+  cancelled
+  coordinateWithDriver
+  none
+  scheduled
+}
+
 enum PurchaseWhen {
   advanceAndDayOfTravel
   dayOfTravelOnly
@@ -2139,6 +2167,8 @@ input ItineraryFilters {
   groupedOtherThanSameLegsMaxCostMultiplier: Float = 2.0
   "Add an additional cost for short transfers on long transit itineraries. See javaDoc on `AddMinSafeTransferCostFilter` details."
   minSafeTransferTimeFactor: Float @deprecated(reason : "This filter is removed, it has undesired side-effects")
+  "If true, remove itineraries that do not include any flexible legs."
+  requireFlexItineraries: Boolean = false
   "Set a relative limit for all transit itineraries. The limit is calculated based on the transit itinerary generalized-cost and the time between itineraries Itineraries without transit legs are excluded from this filter. Example: costLimitFunction(x) = 3600 + 2.0 x and intervalRelaxFactor = 0.5. If the lowest cost returned is 10 000, then the limit is set to: 3 600 + 2 * 10 000 = 26 600 plus half of the time between either departure or arrival times of the itinerary. Default: {\"costLimitFunction\": 15m + 1.50 t, \"intervalRelaxFactor\": 0.4}"
   transitGeneralizedCostLimit: TransitGeneralizedCostFilterParams
 }
