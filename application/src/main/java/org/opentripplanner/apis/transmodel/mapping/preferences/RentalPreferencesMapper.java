@@ -22,5 +22,10 @@ public class RentalPreferencesMapper {
       "useBikeRentalAvailabilityInformation",
       rental::withUseAvailabilityInformation
     );
+
+    callWith.argument(
+      "allowKeepingRentedBicycleAtDestination",
+      rental::withAllowArrivingInRentedVehicleAtDestination
+    );
   }
 }

@@ -826,6 +826,8 @@ type QueryType {
     alightSlackDefault: Int = 0,
     "List of alightSlack for a given set of modes. Defaults: []"
     alightSlackList: [TransportModeSlack],
+    "Whether to allow arriving at the destination with a rented bicycle without dropping it off. This is useful for round trips or when the destination is an intermediate place."
+    allowKeepingRentedBicycleAtDestination: Boolean = false,
     "Whether the trip should depart at dateTime (false, the default), or arrive at dateTime. See `timetableView` for use-cases where this parameter is relevant."
     arriveBy: Boolean = false,
     "Parameters for indicating authorities, lines or quays not be used in the trip patterns"
