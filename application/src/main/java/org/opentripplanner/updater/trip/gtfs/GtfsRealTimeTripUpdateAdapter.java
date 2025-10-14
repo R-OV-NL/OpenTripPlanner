@@ -153,6 +153,7 @@ public class GtfsRealTimeTripUpdateAdapter {
       var tripUpdate = new TripUpdate(rawTripUpdate);
       var tripDescriptor = tripUpdate.tripDescriptor();
 
+
       tripDescriptor
         .tripId()
         .map(id -> new FeedScopedId(feedId, id))
@@ -456,6 +457,7 @@ public class GtfsRealTimeTripUpdateAdapter {
 
     tripUpdate.tripHeadsign().ifPresent(tripBuilder::withHeadsign);
     tripUpdate.tripShortName().ifPresent(tripBuilder::withShortName);
+    tripUpdate.realtimeTripId().ifPresent(tripBuilder::withRealtimeTripId);
 
     Trip trip = tripBuilder.build();
 

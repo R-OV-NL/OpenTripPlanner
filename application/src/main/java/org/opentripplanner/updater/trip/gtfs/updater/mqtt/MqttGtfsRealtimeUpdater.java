@@ -6,6 +6,7 @@ import static org.opentripplanner.updater.trip.UpdateIncrementality.FULL_DATASET
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.transit.realtime.GtfsRealtime;
+import com.google.transit.realtime.GtfsRealtimeOVapi;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedContext;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
@@ -13,7 +14,6 @@ import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientBuilder;
 import com.hivemq.client.mqtt.mqtt5.message.auth.Mqtt5SimpleAuth;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
-import com.google.transit.realtime.GtfsRealtimeOVapi;
 import de.mfdz.MfdzRealtimeExtensions;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -64,7 +64,6 @@ public class MqttGtfsRealtimeUpdater implements GraphUpdater {
   private final ForwardsDelayPropagationType forwardsDelayPropagationType;
   private final BackwardsDelayPropagationType backwardsDelayPropagationType;
   private final String configRef;
-  private final MemoryPersistence persistence = new MemoryPersistence();
   private final ExtensionRegistry registry = ExtensionRegistry.newInstance();
   private final GtfsRealTimeTripUpdateAdapter adapter;
   private final Consumer<UpdateResult> recordMetrics;

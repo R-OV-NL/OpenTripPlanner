@@ -1,6 +1,7 @@
 package org.opentripplanner.updater.trip.gtfs.model;
 
 import com.google.transit.realtime.GtfsRealtime;
+import com.google.transit.realtime.GtfsRealtimeOVapi;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,6 +41,19 @@ public final class TripUpdate {
   public Optional<String> tripShortName() {
     return tripProperties()
       .flatMap(p -> p.hasTripShortName() ? Optional.of(p.getTripShortName()) : Optional.empty());
+  }
+
+  public Optional<String> realtimeTripId() {
+    if(!tripUpdate.getTrip().hasExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)) {
+      return Optional.empty();
+    }
+
+    var ext = tripUpdate.getTrip().getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
+    if(ext.hasRealtimeTripId() && !ext.getRealtimeTripId().isEmpty()) {
+      return Optional.of(ext.getRealtimeTripId());
+    }
+
+    return Optional.empty();
   }
 
   private Optional<GtfsRealtime.TripUpdate.TripProperties> tripProperties() {
