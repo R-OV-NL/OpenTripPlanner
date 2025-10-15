@@ -44,12 +44,12 @@ public final class TripUpdate {
   }
 
   public Optional<String> realtimeTripId() {
-    if(!tripUpdate.getTrip().hasExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)) {
+    if (!tripUpdate.getTrip().hasExtension(GtfsRealtimeOVapi.ovapiTripdescriptor)) {
       return Optional.empty();
     }
 
     var ext = tripUpdate.getTrip().getExtension(GtfsRealtimeOVapi.ovapiTripdescriptor);
-    if(ext.hasRealtimeTripId() && !ext.getRealtimeTripId().isEmpty()) {
+    if (ext.hasRealtimeTripId() && !ext.getRealtimeTripId().isEmpty()) {
       return Optional.of(ext.getRealtimeTripId());
     }
 
