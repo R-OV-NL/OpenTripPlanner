@@ -521,7 +521,10 @@ public abstract class OsmEntity {
       return null;
     }
     if (tags.containsKey("name")) {
-      return TranslatedString.getI18NString(this.generateI18NForPattern("{name}"), true, false);
+      return TranslatedString.getDeduplicatedI18NString(
+        this.generateI18NForPattern("{name}"),
+        false
+      );
     }
     if (tags.containsKey("otp:route_name")) {
       return new NonLocalizedString(tags.get("otp:route_name"));
@@ -744,12 +747,11 @@ public abstract class OsmEntity {
    * from being linked to transit stops that are underneath it.
    **/
   public boolean isPlatform() {
-    var isPlatform = isTag("public_transport", "platform") || isRailwayPlatform();
+    var isPlatform =
+      isTag("public_transport", "platform") ||
+      isTag("railway", "platform") ||
+      isTag("railway", "platform_edge");
     return isPlatform && !isTag("usage", "tourism");
-  }
-
-  public boolean isRailwayPlatform() {
-    return isTag("railway", "platform");
   }
 
   /**

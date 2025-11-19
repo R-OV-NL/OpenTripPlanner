@@ -21,7 +21,6 @@ import org.opentripplanner.graph_builder.GraphBuilder;
 import org.opentripplanner.graph_builder.GraphBuilderDataSources;
 import org.opentripplanner.graph_builder.configure.GraphBuilderModule;
 import org.opentripplanner.graph_builder.issue.report.DataImportIssueReporter;
-import org.opentripplanner.graph_builder.module.DirectTransferGenerator;
 import org.opentripplanner.graph_builder.module.GraphCoherencyCheckerModule;
 import org.opentripplanner.graph_builder.module.OsmBoardingLocationsModule;
 import org.opentripplanner.graph_builder.module.RouteToCentroidStationIdsValidator;
@@ -33,6 +32,7 @@ import org.opentripplanner.graph_builder.module.geometry.CalculateWorldEnvelopeM
 import org.opentripplanner.graph_builder.module.islandpruning.PruneIslands;
 import org.opentripplanner.graph_builder.module.ned.ElevationModule;
 import org.opentripplanner.graph_builder.module.osm.OsmModule;
+import org.opentripplanner.graph_builder.module.transfer.DirectTransferGenerator;
 import org.opentripplanner.gtfs.graphbuilder.GtfsModule;
 import org.opentripplanner.netex.NetexModule;
 import org.opentripplanner.routing.fares.FareServiceFactory;
@@ -44,7 +44,7 @@ import org.opentripplanner.service.osminfo.configure.OsmInfoGraphBuildServiceMod
 import org.opentripplanner.service.vehicleparking.VehicleParkingRepository;
 import org.opentripplanner.service.worldenvelope.WorldEnvelopeRepository;
 import org.opentripplanner.standalone.config.BuildConfig;
-import org.opentripplanner.street.model.StreetLimitationParameters;
+import org.opentripplanner.street.StreetRepository;
 import org.opentripplanner.transit.service.TimetableRepository;
 
 @Singleton
@@ -126,7 +126,7 @@ public interface GraphBuilderFactory {
     Builder fareServiceFactory(FareServiceFactory fareServiceFactory);
 
     @BindsInstance
-    Builder streetLimitationParameters(StreetLimitationParameters streetLimitationParameters);
+    Builder streetRepository(StreetRepository streetRepository);
 
     @BindsInstance
     Builder dataSources(GraphBuilderDataSources graphBuilderDataSources);

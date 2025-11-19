@@ -1,8 +1,11 @@
 package org.opentripplanner.model.plan;
 
+import javax.annotation.Nullable;
 import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.framework.i18n.LocalizedString;
+import org.opentripplanner.framework.i18n.NonLocalizedString;
+import org.opentripplanner.model.GenericLocation;
 import org.opentripplanner.service.vehiclerental.model.VehicleRentalPlace;
 import org.opentripplanner.service.vehiclerental.street.VehicleRentalPlaceVertex;
 import org.opentripplanner.street.model.vertex.StreetVertex;
@@ -115,6 +118,21 @@ public class Place {
     );
   }
 
+  public static Place forGenericLocation(
+    @Nullable GenericLocation location,
+    I18NString defaultName
+  ) {
+    if (location == null) {
+      return Place.normal(null, null, defaultName);
+    }
+
+    return Place.normal(
+      location.lat,
+      location.lng,
+      NonLocalizedString.ofNullableOrElse(location.label, defaultName)
+    );
+  }
+
   public static Place forVehicleRentalPlace(VehicleRentalPlaceVertex vertex) {
     return new Place(
       vertex.getName(),
@@ -137,7 +155,7 @@ public class Place {
 
     boolean realTime = vertex
       .getVehicleParking()
-      .hasRealTimeDataForMode(traverseMode, request.wheelchair());
+      .hasRealTimeDataForMode(traverseMode, request.wheelchairEnabled());
     return new Place(
       vertex.getName(),
       WgsCoordinate.creatOptionalCoordinate(vertex.getLat(), vertex.getLon()),

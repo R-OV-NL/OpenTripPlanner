@@ -17,6 +17,7 @@ import org.opentripplanner.model.plan.leg.ElevationProfile;
 import org.opentripplanner.model.plan.walkstep.RelativeDirection;
 import org.opentripplanner.model.plan.walkstep.WalkStep;
 import org.opentripplanner.model.plan.walkstep.WalkStepBuilder;
+import org.opentripplanner.routing.graphfinder.EntranceResolver;
 import org.opentripplanner.routing.services.notes.StreetNotesService;
 import org.opentripplanner.street.model.edge.AreaEdge;
 import org.opentripplanner.street.model.edge.Edge;
@@ -49,6 +50,7 @@ public class StatesToWalkStepsMapper {
   private final List<State> states;
   private final WalkStep previous;
   private final List<WalkStepBuilder> steps = new ArrayList<>();
+  private final EntranceResolver entranceResolver;
 
   private WalkStepBuilder current = null;
   private double lastAngle = 0;
@@ -74,11 +76,13 @@ public class StatesToWalkStepsMapper {
     List<State> states,
     WalkStep previousStep,
     StreetNotesService streetNotesService,
+    EntranceResolver entranceResolver,
     double ellipsoidToGeoidDifference
   ) {
     this.states = states;
     this.previous = previousStep;
     this.streetNotesService = streetNotesService;
+    this.entranceResolver = entranceResolver;
     this.ellipsoidToGeoidDifference = ellipsoidToGeoidDifference;
   }
 
@@ -157,7 +161,8 @@ public class StatesToWalkStepsMapper {
       return;
     } else if (edge instanceof StreetTransitEntranceLink link) {
       var direction = relativeDirectionForTransitLink(link);
-      createAndSaveStep(backState, forwardState, link.getName(), direction, edge, link.entrance());
+      var entrance = entranceResolver.getEntrance(link.entrance());
+      createAndSaveStep(backState, forwardState, link.getName(), direction, edge, entrance);
       return;
     }
 
@@ -272,9 +277,7 @@ public class StatesToWalkStepsMapper {
         WalkStepBuilder threeBack = steps.get(lastIndex - 2);
         WalkStepBuilder twoBack = steps.get(lastIndex - 1);
         WalkStepBuilder lastStep = steps.get(lastIndex);
-        boolean isOnSameStreet = lastStep
-          .directionTextNoParens()
-          .equals(threeBack.directionTextNoParens());
+        boolean isOnSameStreet = isOnSameStreet(lastStep, twoBack, threeBack);
         if (twoBack.distance() < MAX_ZAG_DISTANCE && isOnSameStreet && !twoBack.hasEntrance()) {
           if (isUTurn(twoBack, lastStep)) {
             steps.remove(lastIndex - 1);
@@ -303,6 +306,30 @@ public class StatesToWalkStepsMapper {
     current.addEdge(edge);
   }
 
+  /**
+   * Determines whether a set of three consecutive instances of {@link WalkStepBuilder} refer to the same street.
+   * The purposes of this check are (i) to give a separate instruction when crossing to the other side of the same street, if a crosswalk namer is iin use
+   * (an instruction can be given to cross at a particular location because others may not be accessible, practical, etc.),
+   * and (ii) to remove trivial turns when a given street briefly merges with another.
+   * @return true if the walk steps refer to the same street, false otherwise.
+   */
+  public static boolean isOnSameStreet(
+    WalkStepBuilder lastStep,
+    WalkStepBuilder twoBack,
+    WalkStepBuilder threeBack
+  ) {
+    String lastStepName = lastStep.directionTextNoParens();
+    String twoBackStepName = twoBack.directionTextNoParens();
+    String threeBackStepName = threeBack.directionTextNoParens();
+    if (lastStepName == null || twoBackStepName == null || threeBackStepName == null) return false;
+
+    return (
+      (!lastStep.isCrossing() || lastStep.nameIsDerived()) &&
+      (!twoBack.isCrossing() || twoBack.nameIsDerived()) &&
+      lastStepName.equals(threeBackStepName)
+    );
+  }
+
   private static RelativeDirection relativeDirectionForTransitLink(StreetTransitEntranceLink link) {
     if (link.isExit()) {
       return EXIT_STATION;
@@ -321,7 +348,7 @@ public class StatesToWalkStepsMapper {
     ElevationProfile p = encodeElevationProfile(
       edge,
       distance,
-      backState.getPreferences().system().geoidElevation() ? -ellipsoidToGeoidDifference : 0
+      backState.getRequest().geoidElevation() ? -ellipsoidToGeoidDifference : 0
     );
     current.addElevation(p);
   }
@@ -566,20 +593,21 @@ public class StatesToWalkStepsMapper {
   }
 
   private WalkStepBuilder createWalkStep(State forwardState, State backState) {
-    Edge en = forwardState.getBackEdge();
+    Edge backEdge = forwardState.getBackEdge();
 
     return WalkStep.builder()
-      .withDirectionText(en.getName())
+      .withDirectionText(backEdge.getName())
       .withStartLocation(new WgsCoordinate(backState.getVertex().getCoordinate()))
-      .withNameIsDerived(en.nameIsDerived())
-      .withAngle(DirectionUtils.getFirstAngle(forwardState.getBackEdge().getGeometry()))
+      .withNameIsDerived(backEdge.nameIsDerived())
+      .withAngle(DirectionUtils.getFirstAngle(backEdge.getGeometry()))
       .withWalkingBike(forwardState.isBackWalkingBike())
-      .withArea(forwardState.getBackEdge() instanceof AreaEdge)
+      .withArea(backEdge instanceof AreaEdge)
+      .withCrossing(backEdge.isCrossing())
       .addElevation(
         encodeElevationProfile(
-          forwardState.getBackEdge(),
+          backEdge,
           0,
-          forwardState.getPreferences().system().geoidElevation() ? -ellipsoidToGeoidDifference : 0
+          forwardState.getRequest().geoidElevation() ? -ellipsoidToGeoidDifference : 0
         )
       )
       .addStreetNotes(streetNotesService.getNotes(forwardState));

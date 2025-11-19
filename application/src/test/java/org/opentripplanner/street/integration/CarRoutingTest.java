@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.opentripplanner.test.support.PolylineAssert.assertThatPolylinesAreEqual;
 
 import java.time.Instant;
-import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.opentripplanner.ConstantsForTests;
 import org.opentripplanner.TestOtpModel;
 import org.opentripplanner._support.time.ZoneIds;
-import org.opentripplanner.framework.geometry.EncodedPolyline;
+import org.opentripplanner.api.model.geometry.EncodedPolyline;
 import org.opentripplanner.model.GenericLocation;
 import org.opentripplanner.model.plan.leg.StreetLeg;
 import org.opentripplanner.routing.algorithm.mapping.GraphPathToItineraryMapper;
@@ -21,9 +20,13 @@ import org.opentripplanner.routing.api.request.RouteRequest;
 import org.opentripplanner.routing.api.request.StreetMode;
 import org.opentripplanner.routing.api.request.request.StreetRequest;
 import org.opentripplanner.routing.graph.Graph;
+import org.opentripplanner.routing.graphfinder.NoopSiteResolver;
 import org.opentripplanner.routing.impl.GraphPathFinder;
+import org.opentripplanner.routing.linking.LinkingContextFactory;
+import org.opentripplanner.routing.linking.TemporaryVerticesContainer;
 import org.opentripplanner.routing.linking.VertexLinkerTestFactory;
-import org.opentripplanner.street.search.TemporaryVerticesContainer;
+import org.opentripplanner.routing.linking.internal.VertexCreationService;
+import org.opentripplanner.routing.linking.mapping.LinkingContextRequestMapper;
 import org.opentripplanner.street.search.TraverseMode;
 import org.opentripplanner.test.support.ResourceLoader;
 
@@ -134,27 +137,25 @@ public class CarRoutingTest {
       .withTo(to)
       .withJourney(jb -> jb.withDirect(new StreetRequest(StreetMode.CAR)))
       .buildRequest();
-    var temporaryVertices = new TemporaryVerticesContainer(
-      graph,
-      VertexLinkerTestFactory.of(graph),
-      id -> List.of(),
-      from,
-      to,
-      StreetMode.CAR,
-      StreetMode.CAR
-    );
+
+    var temporaryVerticesContainer = new TemporaryVerticesContainer();
+    var vertexLinker = VertexLinkerTestFactory.of(graph);
+    var vertexCreationService = new VertexCreationService(vertexLinker);
+    var linkingContextFactory = new LinkingContextFactory(graph, vertexCreationService);
+    var linkingRequest = LinkingContextRequestMapper.map(request);
+    var linkingContext = linkingContextFactory.create(temporaryVerticesContainer, linkingRequest);
     var gpf = new GraphPathFinder(null);
-    var paths = gpf.graphPathFinderEntryPoint(request, temporaryVertices);
+    var paths = gpf.graphPathFinderEntryPoint(request, linkingContext);
 
     GraphPathToItineraryMapper graphPathToItineraryMapper = new GraphPathToItineraryMapper(
-      id -> null,
+      new NoopSiteResolver(),
       ZoneIds.BERLIN,
       graph.streetNotesService,
       graph.ellipsoidToGeoidDifference
     );
 
     var itineraries = graphPathToItineraryMapper.mapItineraries(paths);
-    temporaryVertices.close();
+    temporaryVerticesContainer.close();
 
     // make sure that we only get CAR legs
     itineraries.forEach(i ->
@@ -169,6 +170,6 @@ public class CarRoutingTest {
         })
     );
     Geometry legGeometry = itineraries.get(0).legs().get(0).legGeometry();
-    return EncodedPolyline.encode(legGeometry).points();
+    return EncodedPolyline.of(legGeometry).points();
   }
 }
