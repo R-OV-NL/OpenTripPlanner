@@ -44,6 +44,12 @@ based on merged pull requests. Search GitHub issues and pull requests for smalle
 - Add a map popup to select from multiple features if they are overlapping [#6928](https://github.com/opentripplanner/OpenTripPlanner/pull/6928)
 - Don't fail the whole search if direct, flex or transit search generates a routing validation exception [#7051](https://github.com/opentripplanner/OpenTripPlanner/pull/7051)
 - Fix missing transfers  [#7042](https://github.com/opentripplanner/OpenTripPlanner/pull/7042)
+- Fix coordinate fallback when linking locations in the street graph [#7056](https://github.com/opentripplanner/OpenTripPlanner/pull/7056)
+- Handle barrier entrances correctly [#7067](https://github.com/opentripplanner/OpenTripPlanner/pull/7067)
+- Fix default via vertex name translation mapping [#7046](https://github.com/opentripplanner/OpenTripPlanner/pull/7046)
+- To fix arriveBy searches always set arriveBy property to false in transfer requests [#7089](https://github.com/opentripplanner/OpenTripPlanner/pull/7089)
+- Improve handling of realtime updated StopPatterns [#6909](https://github.com/opentripplanner/OpenTripPlanner/pull/6909)
+- Refactor `ElevatorProcessor` and add tests for elevators [#7079](https://github.com/opentripplanner/OpenTripPlanner/pull/7079)
 [](AUTOMATIC_CHANGELOG_PLACEHOLDER_DO_NOT_REMOVE)
 
 ## 2.8.1 (2025-09-22)
