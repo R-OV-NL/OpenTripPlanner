@@ -120,7 +120,10 @@ class OsmTagMapperTest {
 
   @Test
   void testCycleway() {
-    assertEquals(BICYCLE, wps.getDataForEntity(WayTestData.cycleway()).getPermission());
+    assertEquals(
+      PEDESTRIAN_AND_BICYCLE,
+      wps.getDataForEntity(WayTestData.cycleway()).getPermission()
+    );
   }
 
   @Test

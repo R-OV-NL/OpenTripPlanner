@@ -165,6 +165,14 @@ public class QuayType {
       )
       .field(
         GraphQLFieldDefinition.newFieldDefinition()
+          .name("code")
+          .type(Scalars.GraphQLString)
+          .description("The code of the quay.")
+          .dataFetcher(env -> (((StopLocation) env.getSource()).getCode()))
+          .build()
+      )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
           .name("lines")
           .withDirective(TransmodelDirectives.TIMING_DATA)
           .description("List of lines servicing this quay")

@@ -42,7 +42,7 @@ Lower safety values make an OSM way more desirable and higher values less desira
 | `mtb:scale=2`                                           | `PEDESTRIAN`             |                                                       |             |
 | `indoor=area`                                           | `PEDESTRIAN`             |                                                       |             |
 | `indoor=corridor`                                       | `PEDESTRIAN`             |                                                       |             |
-| `highway=cycleway`                                      | `BICYCLE`                | 0.6                                                   |             |
+| `highway=cycleway`                                      | `PEDESTRIAN_AND_BICYCLE` | 0.6                                                   |             |
 | `mtb:scale=0`                                           | `PEDESTRIAN_AND_BICYCLE` |                                                       |             |
 | `highway=path`                                          | `PEDESTRIAN_AND_BICYCLE` | 0.75                                                  |             |
 | `highway=living_street`                                 | `ALL`                    | 0.9                                                   |             |
