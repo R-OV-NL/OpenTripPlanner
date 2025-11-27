@@ -614,6 +614,8 @@ type PtSituationElement {
 
 "A place such as platform, stance, or quayside where passengers have access to PT vehicles."
 type Quay implements PlaceInterface {
+  "The code of the quay."
+  code: String
   description: String
   "List of visits to this quay as part of vehicle journeys."
   estimatedCalls(
