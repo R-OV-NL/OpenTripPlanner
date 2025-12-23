@@ -9,9 +9,11 @@ import org.rutebanken.netex.model.StopPointInJourneyPattern;
 import org.rutebanken.netex.model.StopUseEnumeration;
 
 /**
- * Validates that the number of passing times in the journey and the number of stop points in the
+ * Validates that the number of passing times in the journey and the number of
+ * stop points in the
  * pattern are equal.
- * It also takes into account that some points in the pattern can be set to stopUse=passthrough
+ * It also takes into account that some points in the pattern can be set to
+ * stopUse=passthrough
  * which means that those must not be referenced in the journey.
  */
 class JourneyPatternSJMismatch extends AbstractHMapValidationRule<String, ServiceJourney> {
@@ -19,15 +21,19 @@ class JourneyPatternSJMismatch extends AbstractHMapValidationRule<String, Servic
   @Override
   public Status validate(ServiceJourney sj) {
     JourneyPattern_VersionStructure journeyPattern = index
-      .getJourneyPatternsById()
-      .lookup(getPatternId(sj));
+        .getJourneyPatternsById()
+        .lookup(getPatternId(sj));
 
     int nStopPointsInJourneyPattern = (int) journeyPattern
-      .getPointsInSequence()
-      .getPointInJourneyPatternOrStopPointInJourneyPatternOrTimingPointInJourneyPattern()
-      .stream()
-      .filter(Predicate.not(JourneyPatternSJMismatch::isPassThrough))
-      .count();
+        .getPointsInSequence()
+        .getPointInJourneyPatternOrStopPointInJourneyPatternOrTimingPointInJourneyPattern()
+        .stream()
+        .filter(Predicate.not(JourneyPatternSJMismatch::isPassThrough))
+        .count();
+
+    if (sj.getPassingTimes() == null || sj.getPassingTimes().getTimetabledPassingTime() == null) {
+      return Status.DISCARD;
+    }
 
     int nTimetablePassingTimes = sj.getPassingTimes().getTimetabledPassingTime().size();
 
@@ -35,14 +41,13 @@ class JourneyPatternSJMismatch extends AbstractHMapValidationRule<String, Servic
   }
 
   /**
-   * Does the stop point in the sequence represent a stop where the vehicle passes through without
+   * Does the stop point in the sequence represent a stop where the vehicle passes
+   * through without
    * stopping?
    */
   private static boolean isPassThrough(PointInLinkSequence_VersionedChildStructure point) {
-    return (
-      point instanceof StopPointInJourneyPattern spijp &&
-      spijp.getStopUse() == StopUseEnumeration.PASSTHROUGH
-    );
+    return (point instanceof StopPointInJourneyPattern spijp &&
+        spijp.getStopUse() == StopUseEnumeration.PASSTHROUGH);
   }
 
   @Override
@@ -66,14 +71,12 @@ class JourneyPatternSJMismatch extends AbstractHMapValidationRule<String, Servic
 
     @Override
     public String getMessage() {
-      return (
-        "Mismatch in stop points between ServiceJourney and JourneyPattern. " +
-        "ServiceJourney will be skipped. " +
-        " ServiceJourney=" +
-        sjId +
-        ", JourneyPattern= " +
-        patternId
-      );
+      return ("Mismatch in stop points between ServiceJourney and JourneyPattern. " +
+          "ServiceJourney will be skipped. " +
+          " ServiceJourney=" +
+          sjId +
+          ", JourneyPattern= " +
+          patternId);
     }
   }
 }

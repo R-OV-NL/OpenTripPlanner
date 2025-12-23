@@ -26,12 +26,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Loads/reads a NeTEx bundle of a data source(zip file/directory/cloud storage) and maps it into
+ * Loads/reads a NeTEx bundle of a data source(zip file/directory/cloud storage)
+ * and maps it into
  * the OTP internal transit model.
  * <p>
- * The NeTEx loader will use a file naming convention to load files in a particular order and
- * keeping an index of entities to enable linking. The convention is documented here {@link
- * NetexFeedParameters#sharedFilePattern()} and here {@link NetexDataSourceHierarchy}.
+ * The NeTEx loader will use a file naming convention to load files in a
+ * particular order and
+ * keeping an index of entities to enable linking. The convention is documented
+ * here {@link
+ * NetexFeedParameters#sharedFilePattern()} and here
+ * {@link NetexDataSourceHierarchy}.
  * <p>
  * This class is also responsible for logging progress and exception handling.
  */
@@ -50,7 +54,9 @@ public class NetexBundle implements Closeable {
   private final double maxStopToShapeSnapDistance;
   private final boolean noTransfersOnIsolatedStops;
   private final Set<IgnorableFeature> ignoredFeatures;
-  /** The NeTEx entities loaded from the input files and passed on to the mapper. */
+  /**
+   * The NeTEx entities loaded from the input files and passed on to the mapper.
+   */
   private NetexEntityIndex index = new NetexEntityIndex();
   /** Report errors to issue store */
   private DataImportIssueStore issueStore;
@@ -59,16 +65,15 @@ public class NetexBundle implements Closeable {
   private NetexXmlParser xmlParser;
 
   public NetexBundle(
-    String feedId,
-    CompositeDataSource source,
-    NetexDataSourceHierarchy hierarchy,
-    TransitDataImportBuilder transitBuilder,
-    Set<String> ferryIdsNotAllowedForBicycle,
-    Collection<FeedScopedId> routeToCentroidStopPlaceIds,
-    double maxStopToShapeSnapDistance,
-    boolean noTransfersOnIsolatedStops,
-    Set<IgnorableFeature> ignorableFeatures
-  ) {
+      String feedId,
+      CompositeDataSource source,
+      NetexDataSourceHierarchy hierarchy,
+      TransitDataImportBuilder transitBuilder,
+      Set<String> ferryIdsNotAllowedForBicycle,
+      Collection<FeedScopedId> routeToCentroidStopPlaceIds,
+      double maxStopToShapeSnapDistance,
+      boolean noTransfersOnIsolatedStops,
+      Set<IgnorableFeature> ignorableFeatures) {
     this.feedId = feedId;
     this.source = source;
     this.hierarchy = hierarchy;
@@ -82,9 +87,8 @@ public class NetexBundle implements Closeable {
 
   /** load the bundle, map it to the OTP transit model and return */
   public TransitDataImportBuilder loadBundle(
-    DeduplicatorService deduplicator,
-    DataImportIssueStore issueStore
-  ) {
+      DeduplicatorService deduplicator,
+      DataImportIssueStore issueStore) {
     LOG.info("Reading {}", hierarchy.description());
 
     this.issueStore = issueStore;
@@ -92,15 +96,14 @@ public class NetexBundle implements Closeable {
     // init parser and mapper
     xmlParser = new NetexXmlParser();
     mapper = new NetexMapper(
-      transitBuilder,
-      feedId,
-      deduplicator,
-      issueStore,
-      ferryIdsNotAllowedForBicycle,
-      routeToCentroidStopPlaceIds,
-      maxStopToShapeSnapDistance,
-      noTransfersOnIsolatedStops
-    );
+        transitBuilder,
+        feedId,
+        deduplicator,
+        issueStore,
+        ferryIdsNotAllowedForBicycle,
+        routeToCentroidStopPlaceIds,
+        maxStopToShapeSnapDistance,
+        noTransfersOnIsolatedStops);
 
     // Load data
     loadFileEntries();
@@ -112,6 +115,14 @@ public class NetexBundle implements Closeable {
     if (!source.exists()) {
       throw new RuntimeException("NeTEx " + source.path() + " does not exist.");
     }
+  }
+
+  public NetexDataSourceHierarchy getHierarchy() {
+    return hierarchy;
+  }
+
+  public String getFeedId() {
+    return feedId;
   }
 
   /* private methods */
@@ -146,7 +157,8 @@ public class NetexBundle implements Closeable {
   }
 
   /**
-   * make a new index and pushes it on the index stack, before executing the task and at the end pop
+   * make a new index and pushes it on the index stack, before executing the task
+   * and at the end pop
    * of the index.
    */
   private void scopeInputData(Runnable task) {
@@ -158,15 +170,17 @@ public class NetexBundle implements Closeable {
   }
 
   /**
-   * Load a set of files and map the entries to OTP Transit model after the loading is complete. It
-   * is important to do this in 2 steps to be able to link references. An attempt to map each entry,
-   * when read, would lead to missing references, since the order entries are read is not enforced
+   * Load a set of files and map the entries to OTP Transit model after the
+   * loading is complete. It
+   * is important to do this in 2 steps to be able to link references. An attempt
+   * to map each entry,
+   * when read, would lead to missing references, since the order entries are read
+   * is not enforced
    * in any way.
    */
   private void loadFilesThenMapToTimetableRepository(
-    String fileDescription,
-    Iterable<DataSource> entries
-  ) {
+      String fileDescription,
+      Iterable<DataSource> entries) {
     for (DataSource entry : entries) {
       // Load entry and store it in the index
       loadSingeFileEntry(fileDescription, entry);

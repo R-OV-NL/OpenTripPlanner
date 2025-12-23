@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The purpose of this class is to be able to turn features on and off.
  * <p>
- * This configuration is optional and found under "feature" in the top level 'otp-config.json'
+ * This configuration is optional and found under "feature" in the top level
+ * 'otp-config.json'
  * file.
  */
 public enum OTPFeature {
@@ -58,9 +59,12 @@ public enum OTPFeature {
     """
   ),
   /**
-   * If this feature flag is switched on, then the minimum transfer time is not the minimum transfer
-   * time, but the definitive transfer time. Use this to override what we think the transfer will
-   * take according to OSM data, for example if you want to set a very low transfer time like 1
+   * If this feature flag is switched on, then the minimum transfer time is not
+   * the minimum transfer
+   * time, but the definitive transfer time. Use this to override what we think
+   * the transfer will
+   * take according to OSM data, for example if you want to set a very low
+   * transfer time like 1
    * minute, when walking the distance take 1m30s.
    *
    * TODO Harmonize the JavaDoc with the user doc and delete JavaDoc
@@ -146,6 +150,7 @@ public enum OTPFeature {
   SandboxAPIGeocoder(false, true, "Enable the Geocoder API."),
   SandboxAPIMapboxVectorTilesApi(false, true, "Enable Mapbox vector tiles API."),
   SandboxAPIParkAndRideApi(false, true, "Enable park-and-ride endpoint."),
+  NetexFlexNL(false, true, "Enable NeTEx flex support (NL profile)."),
   Sorlandsbanen(
     false,
     true,
@@ -172,7 +177,8 @@ public enum OTPFeature {
   }
 
   /**
-   * This method allows the application to initialize each OTP feature. Only use this method at
+   * This method allows the application to initialize each OTP feature. Only use
+   * this method at
    * startup-time.
    * <p>
    * THIS METHOD IS NOT THREAD-SAFE!
@@ -189,12 +195,16 @@ public enum OTPFeature {
   /**
    * FOR TEST ONLY
    *
-   * This method will run the given {@code task} with the feature turned ON. When the task complete
+   * This method will run the given {@code task} with the feature turned ON. When
+   * the task complete
    * the feature is set back to its original value.
    * <p>
-   * This method is synchronized on the feature. This way calls to this method or the
-   * {@link #testOff(Runnable)} is prevented from running concurrent. It is safe to use these
-   * methods in a unit-test, but IT IS NOT SAFE TO USE IT IN GENERAL, because the main code is NOT
+   * This method is synchronized on the feature. This way calls to this method or
+   * the
+   * {@link #testOff(Runnable)} is prevented from running concurrent. It is safe
+   * to use these
+   * methods in a unit-test, but IT IS NOT SAFE TO USE IT IN GENERAL, because the
+   * main code is NOT
    * synchronized.
    */
   public void testOn(Runnable task) {
@@ -232,7 +242,8 @@ public enum OTPFeature {
   }
 
   /**
-   * If feature is turned on, then return supplied object if not return {@code null}.
+   * If feature is turned on, then return supplied object if not return
+   * {@code null}.
    */
   @Nullable
   public <T> T isOnElseNull(Supplier<T> supplier) {

@@ -23,9 +23,12 @@ import org.opentripplanner.transit.model.framework.DeduplicatorService;
 import org.opentripplanner.transit.service.TimetableRepository;
 
 /**
- * This module is used for importing the NeTEx CEN Technical Standard for exchanging Public
- * Transport schedules and related data (<a href="http://netex-cen.eu/">http://netex-cen.eu/</a>).
- * Currently it only supports the Norwegian profile (<a href="https://enturas.atlassian.net/wiki/spaces/PUBLIC/">https://enturas.atlassian.net/wiki/spaces/PUBLIC/</a>),
+ * This module is used for importing the NeTEx CEN Technical Standard for
+ * exchanging Public
+ * Transport schedules and related data
+ * (<a href="http://netex-cen.eu/">http://netex-cen.eu/</a>).
+ * Currently it only supports the Norwegian profile (<a href=
+ * "https://enturas.atlassian.net/wiki/spaces/PUBLIC/">https://enturas.atlassian.net/wiki/spaces/PUBLIC/</a>),
  * but it is intended to be updated later to support other profiles.
  */
 public class NetexModule implements GraphBuilderModule {
@@ -48,16 +51,15 @@ public class NetexModule implements GraphBuilderModule {
   private final List<NetexBundle> netexBundles;
 
   public NetexModule(
-    Graph graph,
-    DeduplicatorService deduplicator,
-    TimetableRepository timetableRepository,
-    VehicleParkingRepository parkingRepository,
-    StreetDetailsRepository streetDetailsRepository,
-    DataImportIssueStore issueStore,
-    int subwayAccessTime,
-    ServiceDateInterval transitPeriodLimit,
-    List<NetexBundle> netexBundles
-  ) {
+      Graph graph,
+      DeduplicatorService deduplicator,
+      TimetableRepository timetableRepository,
+      VehicleParkingRepository parkingRepository,
+      StreetDetailsRepository streetDetailsRepository,
+      DataImportIssueStore issueStore,
+      int subwayAccessTime,
+      ServiceDateInterval transitPeriodLimit,
+      List<NetexBundle> netexBundles) {
     this.graph = graph;
     this.deduplicator = deduplicator;
     this.timetableRepository = timetableRepository;
@@ -78,13 +80,19 @@ public class NetexModule implements GraphBuilderModule {
         netexBundle.checkInputs();
 
         TransitDataImportBuilder transitBuilder = netexBundle.loadBundle(deduplicator, issueStore);
+
+        if (OTPFeature.NetexFlexNL.isOn()) {
+          new org.opentripplanner.netex.nl.NetexFlexNLModule()
+              .processBundle(netexBundle, transitBuilder, issueStore);
+        }
+
         transitBuilder.limitServiceDays(transitPeriodLimit);
         calendarServiceData.add(transitBuilder.buildCalendarServiceData());
 
         if (OTPFeature.FlexRouting.isOn()) {
           transitBuilder
-            .getFlexTripsById()
-            .addAll(FlexTripsMapper.createFlexTrips(transitBuilder, issueStore));
+              .getFlexTripsById()
+              .addAll(FlexTripsMapper.createFlexTrips(transitBuilder, issueStore));
         }
 
         validateStopTimesForEachTrip(transitBuilder.getStopTimesSortedByTrip());
@@ -93,11 +101,10 @@ public class NetexModule implements GraphBuilderModule {
 
         AddTransitEntitiesToTimetable.addToTimetable(otpService, timetableRepository);
         AddTransitEntitiesToGraph.addToGraph(
-          otpService,
-          subwayAccessTime,
-          graph,
-          streetDetailsRepository
-        );
+            otpService,
+            subwayAccessTime,
+            graph,
+            streetDetailsRepository);
 
         var lots = transitBuilder.vehicleParkings();
         parkingRepository.updateVehicleParking(lots, List.of());
@@ -108,10 +115,9 @@ public class NetexModule implements GraphBuilderModule {
       timetableRepository.updateCalendarServiceData(calendarServiceData);
 
       TransitWithFutureDateValidator.validate(
-        calendarServiceData,
-        issueStore,
-        timetableRepository.getTimeZone()
-      );
+          calendarServiceData,
+          issueStore,
+          timetableRepository.getTimeZone());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
