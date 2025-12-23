@@ -305,6 +305,16 @@ public class ServiceJourneyType {
           )
           .build()
       )
+      .field(
+        GraphQLFieldDefinition.newFieldDefinition()
+          .name("realtimeTripId")
+          .description(
+            "Realtime trip ID consisting of DATA_OWNER_CODE:LINE_PLANNING_NUMBER:JOURNEY_NUMBER."
+          )
+          .type(Scalars.GraphQLString)
+          .dataFetcher(environment -> trip(environment).getRealtimeTripId())
+          .build()
+      )
       .build();
   }
 

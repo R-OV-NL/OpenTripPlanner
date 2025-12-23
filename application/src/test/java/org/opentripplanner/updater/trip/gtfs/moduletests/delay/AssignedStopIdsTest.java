@@ -70,7 +70,7 @@ class AssignedStopIdsTest implements RealtimeTestConstants {
 
     assertSuccess(rt.applyTripUpdate(tripUpdate1));
     assertEquals(
-            "UPDATED | D 9:50 9:50 | B 10:01 10:01 | C 10:02 10:02",
+      "UPDATED | D 9:50 9:50 | B 10:01 10:01 | C 10:02 10:02",
       env.tripData(TRIP_1_ID).showTimetable()
     );
     assertTrue(env.tripData(TRIP_1_ID).tripPattern().isCreatedByRealtimeUpdater());
