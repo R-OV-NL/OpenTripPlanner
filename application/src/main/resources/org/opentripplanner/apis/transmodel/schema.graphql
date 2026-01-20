@@ -169,7 +169,7 @@ type Contact {
   bookingUrl: String
   "Name of person to contact"
   contactPerson: String
-  "Email adress for contact"
+  "Email address for contact"
   email: String
   "Textual description of how to get in contact"
   furtherDetails: String
@@ -547,6 +547,8 @@ type Place {
   rentalVehicle: RentalVehicle
   "Type of vertex. (Normal, Bike sharing station, Bike P+R, Transit quay) Mostly used for better localization of bike sharing and P+R station names"
   vertexType: VertexType
+  "This defines if the place is a requested via location, and what kind it is. If the value is `null`, this place is not a via location."
+  viaLocationType: ViaLocationType
 }
 
 type PlaceAtDistance {
@@ -853,9 +855,11 @@ type QueryType {
     "Parameters for indicating authorities, lines or quays not be used in the trip patterns"
     banned: InputBanned,
     "The set of characteristics that the user wants to optimise for during bicycle searches -- defaults to safe"
-    bicycleOptimisationMethod: BicycleOptimisationMethod = safe,
+    bicycleOptimisationMethod: BicycleOptimisationMethod @deprecated(reason : "Use bikePreferences.optimisationMethod instead"),
+    "Bicycle routing preferences. If not provided, default values from the server configuration will be used. Deprecated top-level bike fields (bikeSpeed, bicycleOptimisationMethod, triangleFactors) take precedence if explicitly provided."
+    bikePreferences: BikePreferencesInput,
     "The maximum bike speed along streets, in meters per second"
-    bikeSpeed: Float = 5.0,
+    bikeSpeed: Float @deprecated(reason : "Use bikePreferences.speed instead"),
     "The boardSlack is the minimum extra time to board a public transport vehicle. This is the same as the 'minimumTransferTime', except that this also applies to to the first transit leg in the trip. This is the default value used, if not overridden by the 'boardSlackList'."
     boardSlackDefault: Int = 0,
     "List of boardSlack for a given set of modes. Defaults: []"
@@ -925,6 +929,8 @@ type QueryType {
     THIS IS STILL AN EXPERIMENTAL FEATURE - IT MAY CHANGE WITHOUT ANY NOTICE!
     """
     relaxTransitGroupPriority: RelaxCostInput = null,
+    "Scooter routing preferences. If not provided, default values from the server configuration will be used."
+    scooterPreferences: ScooterPreferencesInput,
     """
     The length of the search-window in minutes. This parameter is optional.
     
@@ -981,7 +987,7 @@ type QueryType {
     "An expected transfer time (in seconds) that specifies the amount of time that must pass between exiting one public transport vehicle and boarding another. This time is in addition to time it might take to walk between stops."
     transferSlack: Int = 120,
     "When setting the BicycleOptimisationMethod to 'triangle', use these values to tell the routing engine how important each of the factors is compared to the others. All values should add up to 1."
-    triangleFactors: TriangleFactors,
+    triangleFactors: TriangleFactors @deprecated(reason : "Use bikePreferences.triangleFactors or scooterPreferences.triangleFactors instead"),
     "Whether or not bike rental availability information will be used to plan bike rental trips."
     useBikeRentalAvailabilityInformation: Boolean = false,
     """
@@ -1122,12 +1128,14 @@ type RoutingParameters {
   disableRemainingWeightHeuristic: Boolean
   "What is the cost of boarding a elevator?"
   elevatorBoardCost: Int
-  "How long does it take to get on an elevator, on average."
+  "How long it takes to get on an elevator, on average."
   elevatorBoardTime: Int
   "What is the cost of travelling one floor on an elevator?"
-  elevatorHopCost: Int
-  "How long does it take to advance one floor on an elevator?"
+  elevatorHopCost: Int @deprecated(reason : "Use elevatorReluctance to set cost instead.")
+  "How long it takes to advance one floor on an elevator, on average."
   elevatorHopTime: Int
+  "A multiplier to specify how bad using an elevator is."
+  elevatorReluctance: Float
   "Whether to apply the ellipsoid->geoid offset to all elevations in the response."
   geoIdElevation: Boolean
   "When true, real-time updates are ignored during this search."
@@ -1689,9 +1697,9 @@ enum FilterPlaceType {
   "Bicycle rent stations"
   bicycleRent
   "Bike parks"
-  bikePark @deprecated(reason : "Not supported")
+  bikePark
   "Car parks"
-  carPark @deprecated(reason : "Not supported")
+  carPark
   "Quay"
   quay
   "StopPlace"
@@ -1767,6 +1775,7 @@ enum Mode {
   monorail
   rail
   scooter
+  snowAndIce
   taxi
   tram
   trolleybus
@@ -1966,6 +1975,8 @@ enum StreetMode {
   car_pickup
   "Walk to a car rental point along the road, drive to a drop-off point along the road, and walk the rest of the way. This can include car rentals at fixed locations or free-floating services."
   car_rental
+  "Share a car ride with a driver and other passengers going in the same direction."
+  carpool
   "Walk to an eligible pickup area for flexible transportation, ride to an eligible drop-off area and then walk the rest of the way."
   flexible
   "Walk only"
@@ -2106,11 +2117,31 @@ enum TransportSubmode {
   waterTaxi
 }
 
+"Optimization methods for vehicle routing (bicycle, scooter, etc.)."
+enum VehicleOptimisationMethod {
+  "Prefer flat terrain"
+  flat
+  "Prefer faster routes"
+  quick
+  "Prefer safer routes"
+  safe
+  "Custom optimization using triangle factors"
+  triangle
+}
+
 enum VertexType {
   bikePark
   bikeShare
   normal
   transit
+}
+
+"Categorization for via locations."
+enum ViaLocationType {
+  "The via stop location must be visited as part of a transit trip as at the boarding stop, the intermediate stop, or the alighting stop."
+  passThrough
+  "The location is visited physically by boarding or alighting a transit trip at a given stop, or by traveling via requested coordinate location as part of a access, transfer, egress or direct segment. Intermediate stops visited on-board do not count."
+  visit
 }
 
 enum WheelchairBoarding {
@@ -2163,6 +2194,18 @@ scalar Long
 
 "Time using the format: `HH:MM:SS`. Example: `18:25:43`"
 scalar Time
+
+"Bicycle routing preferences."
+input BikePreferencesInput {
+  "The set of characteristics that the user wants to optimize for during bicycle routing."
+  optimisationMethod: VehicleOptimisationMethod = safe
+  "A measure of how bad biking is compared to being in transit for equal periods of time. Higher values make routing prefer other modes over biking."
+  reluctance: Float = 2.0
+  "The maximum bike speed along streets, in meters per second."
+  speed: Float = 5.0
+  "When using optimisationMethod 'triangle', these values tell the routing engine how important each factor is compared to the others. All values should add up to 1."
+  triangleFactors: TriangleFactors
+}
 
 "Filter trips by disallowing lines involving certain elements. If both lines and authorities are specified, only one must be valid for each line to be banned. If a line is both banned and whitelisted, it will be counted as banned."
 input InputBanned {
@@ -2299,6 +2342,18 @@ input RelaxCostInput {
   constant: Cost = "0s"
   "The factor to multiply with the 'other cost'. Minimum value is 1.0."
   ratio: Float = 1.0
+}
+
+"Scooter routing preferences."
+input ScooterPreferencesInput {
+  "The set of characteristics that the user wants to optimize for during scooter routing."
+  optimisationMethod: VehicleOptimisationMethod = safe
+  "A measure of how bad scooter travel is compared to being in transit for equal periods of time. Higher values make routing prefer other modes over scooter."
+  reluctance: Float = 2.0
+  "The maximum scooter speed along streets, in meters per second."
+  speed: Float = 5.0
+  "When using optimisationMethod 'triangle', these values tell the routing engine how important each factor is compared to the others. All values should add up to 1."
+  triangleFactors: TriangleFactors
 }
 
 "A combination of street mode and corresponding duration"

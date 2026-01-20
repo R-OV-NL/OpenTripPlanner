@@ -12,7 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.opentripplanner.ConstantsForTests;
-import org.opentripplanner.model.calendar.ServiceDateInterval;
+import org.opentripplanner.model.calendar.LocalDateInterval;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.test.support.ResourceLoader;
 import org.opentripplanner.transit.model.framework.Deduplicator;
@@ -26,11 +26,11 @@ class GtfsModuleTest {
     var model = buildTestModel();
 
     var bundle = GtfsBundleTestFactory.forTest(ConstantsForTests.SIMPLE_GTFS);
-    var module = GtfsModule.forTest(
+    var module = GtfsModuleTestFactory.forTest(
       List.of(bundle),
       model.timetableRepository,
       model.graph,
-      ServiceDateInterval.unbounded()
+      LocalDateInterval.unbounded()
     );
 
     module.buildGraph();
@@ -57,11 +57,11 @@ class GtfsModuleTest {
     var bundles = List.of(bundle("A"), bundle("A"));
     var model = buildTestModel();
 
-    var module = GtfsModule.forTest(
+    var module = GtfsModuleTestFactory.forTest(
       bundles,
       model.timetableRepository,
       model.graph,
-      ServiceDateInterval.unbounded()
+      LocalDateInterval.unbounded()
     );
     assertThrows(IllegalArgumentException.class, module::buildGraph);
   }
@@ -106,11 +106,11 @@ class GtfsModuleTest {
       var feedIds = bundles.stream().map(GtfsBundle::getFeedId).collect(Collectors.toSet());
       assertEquals(bundles.size(), feedIds.size());
 
-      var module = GtfsModule.forTest(
+      var module = GtfsModuleTestFactory.forTest(
         bundles,
         model.timetableRepository,
         model.graph,
-        ServiceDateInterval.unbounded()
+        LocalDateInterval.unbounded()
       );
 
       module.buildGraph();
