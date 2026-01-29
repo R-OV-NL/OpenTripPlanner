@@ -221,7 +221,6 @@ public class TurnRestrictionModule implements GraphBuilderModule {
 
     addedVertices = 0;
     addedEdges = 0;
-    //TODO: Figure out why this is so slow with a large dataset
     for (var turnRestriction : turnRestrictions) {
       processRestriction(turnRestriction);
       //noinspection Convert2MethodRef

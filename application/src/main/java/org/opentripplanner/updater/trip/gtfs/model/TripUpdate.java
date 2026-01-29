@@ -5,7 +5,7 @@ import com.google.transit.realtime.GtfsRealtimeOVapi;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.opentripplanner.framework.i18n.I18NString;
+import org.opentripplanner.core.model.i18n.I18NString;
 
 /**
  * A real-time update for trip, which may contain updated stop times and trip properties.

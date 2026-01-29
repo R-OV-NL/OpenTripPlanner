@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.opentripplanner.core.model.i18n.NonLocalizedString;
+import org.opentripplanner.core.model.id.FeedScopedId;
 import org.opentripplanner.framework.geometry.WgsCoordinate;
-import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.framework.json.ObjectMappers;
-import org.opentripplanner.model.impl.OtpTransitServiceBuilder;
-import org.opentripplanner.transit.model.framework.FeedScopedId;
+import org.opentripplanner.model.impl.TransitDataImportBuilder;
 import org.opentripplanner.transit.model.site.GroupOfStations;
 import org.opentripplanner.transit.model.site.GroupOfStationsBuilder;
 import org.opentripplanner.transit.model.site.Station;
@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Loads optional sidecar configuration for GroupOfStations from a GTFS bundle. If a file named
  * {@code group_of_stations.json} is present at the root of the GTFS data source, it is parsed and
- * the defined groups are added to the {@link OtpTransitServiceBuilder}'s {@link
+ * the defined groups are added to the {@link TransitDataImportBuilder}'s {@link
  * org.opentripplanner.transit.service.SiteRepositoryBuilder}.
  *
  * The JSON schema is a list of objects:
@@ -43,7 +43,7 @@ public class GroupOfStationsSidecarLoader {
 
   private static final ObjectMapper MAPPER = ObjectMappers.ignoringExtraFields();
 
-  public static void loadIntoBuilder(GtfsBundle bundle, OtpTransitServiceBuilder builder) {
+  public static void loadIntoBuilder(GtfsBundle bundle, TransitDataImportBuilder builder) {
     try {
       // 1) Try working directory sidecar with feed-specific filename, then default filename
       if (loadFromWorkingDirectory(bundle, builder)) {
@@ -70,7 +70,7 @@ public class GroupOfStationsSidecarLoader {
 
   private static boolean loadFromWorkingDirectory(
     GtfsBundle bundle,
-    OtpTransitServiceBuilder builder
+    TransitDataImportBuilder builder
   ) {
     try {
       String preferred = "group_of_stations_" + bundle.getFeedId() + ".json";
@@ -108,7 +108,7 @@ public class GroupOfStationsSidecarLoader {
   private static void loadFromStream(
     InputStream is,
     GtfsBundle bundle,
-    OtpTransitServiceBuilder builder
+    TransitDataImportBuilder builder
   ) throws Exception {
     List<GroupSpec> specs = MAPPER.readValue(is, new TypeReference<List<GroupSpec>>() {});
     for (GroupSpec spec : specs) {
@@ -119,7 +119,7 @@ public class GroupOfStationsSidecarLoader {
   private static void addGroup(
     GroupSpec spec,
     GtfsBundle bundle,
-    OtpTransitServiceBuilder builder
+    TransitDataImportBuilder builder
   ) {
     String feedId = bundle.getFeedId();
     FeedScopedId groupId = toFeedScopedId(feedId, spec.id);
