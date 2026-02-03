@@ -81,7 +81,7 @@ class DefaultTransitServiceTest {
   );
   private static final TripPattern REAL_TIME_PATTERN = TEST_MODEL.pattern(BUS)
     .withStopPattern(REAL_TIME_STOP_PATTERN)
-    .withCreatedByRealtimeUpdater(true)
+    .withRealTimeStopPatternModified()
     .build();
 
   static FeedScopedId CALENDAR_ID = id("CAL_1");
@@ -153,7 +153,7 @@ class DefaultTransitServiceTest {
       .build();
 
     var deduplicator = new Deduplicator();
-    var timetableRepository = new TimetableRepository(siteRepository, new Deduplicator());
+    var timetableRepository = new TimetableRepository(siteRepository);
     var canceledStopTimes = TEST_MODEL.stopTimesEvery5Minutes(3, TRIP, "11:30");
     var canceledTripTimes = TripTimesFactory.tripTimes(TRIP, canceledStopTimes, deduplicator)
       .createRealTimeFromScheduledTimes()

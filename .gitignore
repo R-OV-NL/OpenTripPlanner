@@ -51,3 +51,6 @@ graph.obj
 *.svg.bkp
 
 **/bin/**
+
+# EPSG files
+application/v??.?.??

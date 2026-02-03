@@ -157,7 +157,10 @@ public class GroupOfStationsSidecarLoader {
       "Registered GroupOfStations {} with {} child stations: {}",
       groupId,
       childStations.size(),
-      childStations.stream().map(s -> s.getId().toString()).collect(Collectors.joining(", "))
+      childStations
+        .stream()
+        .map(s -> s.getId().toString())
+        .collect(Collectors.joining(", "))
     );
   }
 

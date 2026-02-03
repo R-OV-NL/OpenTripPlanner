@@ -204,7 +204,7 @@ public class GtfsModule implements GraphBuilderModule {
 
         if (gtfsBundle.parameters().blockBasedInterlining()) {
           new InterlineProcessor(
-            timetableRepository.getTransferService(),
+            timetableRepository.getConstrainedTransferService(),
             builder.getStaySeatedNotAllowed(),
             gtfsBundle.parameters().maxInterlineDistance(),
             issueStore,
