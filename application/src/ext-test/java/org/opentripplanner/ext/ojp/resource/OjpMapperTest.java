@@ -1,4 +1,4 @@
-package org.opentripplanner.ext.ojp.trias;
+package org.opentripplanner.ext.ojp.resource;
 
 import static jakarta.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 import static org.opentripplanner.transit.model._data.TimetableRepositoryForTest.id;
@@ -6,7 +6,6 @@ import static org.opentripplanner.transit.model._data.TimetableRepositoryForTest
 import de.vdv.ojp20.OJP;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -37,9 +36,9 @@ class OjpMapperTest {
 
   private static final String ROUTE_ID = "r1";
   private static final LocalDate SERVICE_DATE = LocalDate.of(2025, 2, 10);
-  private static final SiteRepositoryBuilder siteRepositoryBuilder = SiteRepository.of();
+  private static final SiteRepositoryBuilder SITE_REPOSITORY_BUILDER = SiteRepository.of();
   private static final TimetableRepositoryForTest TEST_MODEL = new TimetableRepositoryForTest(
-    siteRepositoryBuilder
+    SITE_REPOSITORY_BUILDER
   );
   private static final RegularStop STOP_1 = TEST_MODEL.stop("s1").build();
   private static final RegularStop STOP_2 = TEST_MODEL.stop("s2").build();
@@ -68,7 +67,7 @@ class OjpMapperTest {
     SERVICE_DATE.atStartOfDay(ZoneIds.BERLIN).toInstant()
   );
 
-  private static final ZonedDateTime timestamp = OffsetDateTime.parse(
+  private static final ZonedDateTime TIMESTAMP = OffsetDateTime.parse(
     "2025-02-10T14:24:02+01:00"
   ).atZoneSameInstant(ZoneIds.BERLIN);
   private static final Function<String, Optional<String>> RESOLVE_FEED_LANG = feedId ->
@@ -84,7 +83,7 @@ class OjpMapperTest {
       RESOLVE_FEED_LANG
     );
 
-    var ojp = mapper.mapCalls(List.of(new CallAtStop(TRIP_TIMES_ON_DATE, WALK_TIME)), timestamp);
+    var ojp = mapper.mapCalls(List.of(new CallAtStop(TRIP_TIMES_ON_DATE, WALK_TIME)), TIMESTAMP);
 
     var context = JAXBContext.newInstance(OJP.class);
     var marshaller = context.createMarshaller();
@@ -98,17 +97,5 @@ class OjpMapperTest {
 
     // Print the XML output
     System.out.println(xmlWriter);
-  }
-
-  @Test
-  void ojpToTrias() {
-    var mapper = new StopEventResponseMapper(
-      Set.of(),
-      ZoneIds.BERLIN,
-      new DefaultFeedIdMapper(),
-      RESOLVE_FEED_LANG
-    );
-    var ojp = mapper.mapCalls(List.of(new CallAtStop(TRIP_TIMES_ON_DATE, WALK_TIME)), timestamp);
-    OjpToTriasTransformer.ojpToTrias(ojp, new PrintWriter(System.out));
   }
 }
