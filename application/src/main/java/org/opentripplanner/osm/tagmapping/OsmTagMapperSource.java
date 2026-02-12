@@ -1,7 +1,8 @@
 package org.opentripplanner.osm.tagmapping;
 
 /**
- * This is the list of {@link OsmTagMapper} sources. The enum provide a mapping between the enum
+ * This is the list of {@link OsmTagMapper} sources. The enum provide a mapping
+ * between the enum
  * name and the actual implementation.
  */
 public enum OsmTagMapperSource {
@@ -14,6 +15,7 @@ public enum OsmTagMapperSource {
   ATLANTA,
   HOUSTON,
   PORTLAND,
+  NETHERLANDS,
   CONSTANT_SPEED_FINLAND;
 
   public OsmTagMapper getInstance() {
@@ -27,6 +29,7 @@ public enum OsmTagMapperSource {
       case ATLANTA -> new AtlantaMapper();
       case HOUSTON -> new HoustonMapper();
       case PORTLAND -> new PortlandMapper();
+      case NETHERLANDS -> new NetherlandsMapper();
       case CONSTANT_SPEED_FINLAND -> new ConstantSpeedMapper();
     };
   }
