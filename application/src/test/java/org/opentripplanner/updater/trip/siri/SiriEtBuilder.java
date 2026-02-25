@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import org.opentripplanner.LocalTimeParser;
 import org.opentripplanner.transit.model.site.RegularStop;
 import org.opentripplanner.transit.model.site.StopLocation;
+import uk.org.siri.siri21.CallStatusEnumeration;
 import uk.org.siri.siri21.DataFrameRefStructure;
 import uk.org.siri.siri21.DatedVehicleJourneyRef;
 import uk.org.siri.siri21.EstimatedCall;
@@ -19,12 +20,14 @@ import uk.org.siri.siri21.EstimatedVersionFrameStructure;
 import uk.org.siri.siri21.FramedVehicleJourneyRefStructure;
 import uk.org.siri.siri21.LineRef;
 import uk.org.siri.siri21.NaturalLanguageStringStructure;
+import uk.org.siri.siri21.OccupancyEnumeration;
 import uk.org.siri.siri21.OperatorRefStructure;
 import uk.org.siri.siri21.QuayRefStructure;
 import uk.org.siri.siri21.RecordedCall;
 import uk.org.siri.siri21.StopAssignmentStructure;
 import uk.org.siri.siri21.StopPointRefStructure;
 import uk.org.siri.siri21.VehicleJourneyRef;
+import uk.org.siri.siri21.VehicleModesEnumeration;
 
 /**
  * This is a helper class for constucting Siri ET messages to use in tests.
@@ -94,6 +97,42 @@ public class SiriEtBuilder {
     var ref = new LineRef();
     ref.setValue(lineRef);
     evj.setLineRef(ref);
+    return this;
+  }
+
+  public SiriEtBuilder withOccupancy(OccupancyEnumeration occupancy) {
+    evj.setOccupancy(occupancy);
+    return this;
+  }
+
+  public SiriEtBuilder withPredictionInaccurate(boolean predictionInaccurate) {
+    evj.setPredictionInaccurate(predictionInaccurate);
+    return this;
+  }
+
+  public SiriEtBuilder withDestinationName(String destinationName) {
+    var name = new NaturalLanguageStringStructure();
+    name.setValue(destinationName);
+    evj.getDestinationNames().add(name);
+    return this;
+  }
+
+  public SiriEtBuilder withExternalLineRef(String externalLineRef) {
+    var ref = new LineRef();
+    ref.setValue(externalLineRef);
+    evj.setExternalLineRef(ref);
+    return this;
+  }
+
+  public SiriEtBuilder withPublishedLineName(String lineName) {
+    var name = new NaturalLanguageStringStructure();
+    name.setValue(lineName);
+    evj.getPublishedLineNames().add(name);
+    return this;
+  }
+
+  public SiriEtBuilder withVehicleMode(VehicleModesEnumeration mode) {
+    evj.getVehicleModes().add(mode);
     return this;
   }
 
@@ -214,6 +253,12 @@ public class SiriEtBuilder {
       return this;
     }
 
+    public RecordedCallsBuilder withVisitNumber(int visitNumber) {
+      var call = calls.getLast();
+      call.setVisitNumber(BigInteger.valueOf(visitNumber));
+      return this;
+    }
+
     public RecordedCallsBuilder withIsExtraCall(boolean extra) {
       var call = calls.getLast();
       call.setExtraCall(extra);
@@ -223,6 +268,12 @@ public class SiriEtBuilder {
     public RecordedCallsBuilder withIsCancellation(boolean cancel) {
       var call = calls.getLast();
       call.setCancellation(cancel);
+      return this;
+    }
+
+    public RecordedCallsBuilder clearOrder() {
+      var call = calls.getLast();
+      call.setOrder(null);
       return this;
     }
 
@@ -294,6 +345,12 @@ public class SiriEtBuilder {
       return this;
     }
 
+    public EstimatedCallsBuilder withVisitNumber(int visitNumber) {
+      var call = calls.getLast();
+      call.setVisitNumber(BigInteger.valueOf(visitNumber));
+      return this;
+    }
+
     public EstimatedCallsBuilder withIsExtraCall(boolean extra) {
       var call = calls.getLast();
       call.setExtraCall(extra);
@@ -327,10 +384,21 @@ public class SiriEtBuilder {
       return this;
     }
 
+    public EstimatedCallsBuilder clearOrder() {
+      var call = calls.getLast();
+      call.setOrder(null);
+      return this;
+    }
+
     public EstimatedCallsBuilder addDestinationDisplay(String destinationDisplay) {
       var dd = new NaturalLanguageStringStructure();
       dd.setValue(destinationDisplay);
       calls.getLast().getDestinationDisplaies().add(dd);
+      return this;
+    }
+
+    public EstimatedCallsBuilder withArrivalStatus(CallStatusEnumeration callStatus) {
+      calls.getLast().setArrivalStatus(callStatus);
       return this;
     }
 

@@ -268,6 +268,8 @@ type EstimatedCall {
   expectedDepartureTime: DateTime!
   "Scheduled platform at which the vehicle is expected to arrive/depart. Not affected by real time updates."
   expectedPlatform: String
+  "Whether this call is an extra call introduced by real-time data"
+  extraCall: Boolean!
   "Whether vehicle may be alighted at quay."
   forAlighting: Boolean!
   "Whether vehicle may be boarded at quay."

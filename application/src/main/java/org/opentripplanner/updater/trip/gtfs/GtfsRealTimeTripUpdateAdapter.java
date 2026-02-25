@@ -24,9 +24,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import org.opentripplanner.core.framework.deduplicator.DeduplicatorService;
 import org.opentripplanner.core.model.id.FeedScopedId;
 import org.opentripplanner.transit.model.framework.DataValidationException;
-import org.opentripplanner.transit.model.framework.DeduplicatorService;
 import org.opentripplanner.transit.model.framework.Result;
 import org.opentripplanner.transit.model.network.StopPattern;
 import org.opentripplanner.transit.model.network.TripPattern;
@@ -52,23 +52,15 @@ import org.opentripplanner.updater.trip.UpdateIncrementality;
 import org.opentripplanner.updater.trip.gtfs.model.TripUpdate;
 import org.opentripplanner.updater.trip.patterncache.TripPatternCache;
 import org.opentripplanner.updater.trip.patterncache.TripPatternIdGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Adapts from GTFS-RT TripUpdates to OTP's internal real-time data model.
  */
 public class GtfsRealTimeTripUpdateAdapter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GtfsRealTimeTripUpdateAdapter.class);
-
   /**
    * A synchronized cache of trip patterns added to the timetable repository
    * due to GTFS-realtime messages.
-   * <p>
-   * This has "Siri" in the name because we are combining the two versions very carefully, step by
-   * step. Once this process is complete, we will clean up the name and move it to an appropriate
-   * package.
    **/
   private final TripPatternCache tripPatternCache;
 
@@ -78,8 +70,6 @@ public class GtfsRealTimeTripUpdateAdapter {
    * timetable snapshot.
    */
   private final TransitEditorService transitEditorService;
-
-  private final DeduplicatorService deduplicator;
 
   private final TimetableSnapshotManager snapshotManager;
   private final Supplier<LocalDate> localDateNow;
@@ -100,7 +90,6 @@ public class GtfsRealTimeTripUpdateAdapter {
       timetableRepository,
       snapshotManager.getTimetableSnapshotBuffer()
     );
-    this.deduplicator = deduplicator;
     this.tripTimesUpdater = new TripTimesUpdater(timetableRepository.getTimeZone(), deduplicator);
     this.tripPatternCache = new TripPatternCache(
       new TripPatternIdGenerator(),
