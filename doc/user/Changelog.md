@@ -94,6 +94,10 @@ based on merged pull requests. Search GitHub issues and pull requests for smalle
 - Fix transport mode filter not applied on multi-mode patterns [#7275](https://github.com/opentripplanner/OpenTripPlanner/pull/7275)
 - Support for Siri ArrivalStatus.ARRIVED on EstimatedCalls [#7299](https://github.com/opentripplanner/OpenTripPlanner/pull/7299)
 - Fix memory leak in `TimetableSnapshot` related to `patternsForStop` and `realTimeAddedReplacedByTripOnServiceDateById` [#7253](https://github.com/opentripplanner/OpenTripPlanner/pull/7253)
+- Move `StreetSearchBuilder` to street module [#7328](https://github.com/opentripplanner/OpenTripPlanner/pull/7328)
+- Mark RecordedCall without ActualDepartureTime as not departed [#7336](https://github.com/opentripplanner/OpenTripPlanner/pull/7336)
+- Update to Java 25 [#7246](https://github.com/opentripplanner/OpenTripPlanner/pull/7246)
+- Reject SIRI messages with missing Order attribute on calls [#7324](https://github.com/opentripplanner/OpenTripPlanner/pull/7324)
 [](AUTOMATIC_CHANGELOG_PLACEHOLDER_DO_NOT_REMOVE)
 
 ## 2.8.1 (2025-09-22)

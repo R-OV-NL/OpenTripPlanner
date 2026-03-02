@@ -28,7 +28,8 @@ Sometimes it is desirable to run the test configuration in the CI environment ma
 example, when making changes to the tests. To do this, perform these steps:
 1. Create a local branch in git that contains the desired performance test configuration.
 2. In [performance-test.yml](/.github/workflows/performance-test.yml) add your test branch name to
-the configuration and change all `profile`s to `core`:
+the configuration and change all those locations that you want to run on the branch to `core`:
+
 ```diff
 name: Performance test
 
@@ -47,24 +48,6 @@ jobs:
       matrix:
         include:
           ...
-          - location: baden-wuerttemberg # German state of Baden-Württemberg: https://en.wikipedia.org/wiki/Baden-W%C3%BCrttemberg
-            iterations: 1
-            jfr-delay: "50s"
--           profile: extended
-+           profile: core
-
-          - location: switzerland
-            iterations: 1
-            jfr-delay: "50s"
--           profile: extended
-+           profile: core
-
-          - location: washington-state
-            iterations: 1
-            jfr-delay: "20s"
--           profile: extended
-+           profile: core
-
           - location: helsinki
             iterations: 1
             jfr-delay: "50s"
@@ -75,6 +58,9 @@ jobs:
 3. Commit the changes to [performance-test.yml](/.github/workflows/performance-test.yml).
 4. Push the changes to a branch in the **upstream** [OpenTripPlanner](https://github.com/opentripplanner/OpenTripPlanner/) repository with the same name you added to [performance-test.yml](/.github/workflows/performance-test.yml).
 5. The tests will run after the push.
+
+**Note** In order to visualise before and after, it is helpful to push a commit that is the same as the current `dev-2.x` and run the speed
+test on that.
 
 ## Instrumentation
 
